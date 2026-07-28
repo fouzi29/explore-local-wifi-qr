@@ -2,18 +2,17 @@ import nodemailer from 'nodemailer';
 import { CapturedLead, VenueSettings } from './storage';
 
 const SYSTEM_OUTGOING_EMAIL = 'fzfemass.1021@gmail.com';
-const SYSTEM_OUTGOING_PASS = 'fzfemass@21@(fzm)@g1#f2';
+const SYSTEM_OUTGOING_PASS = 'gxspshuwjejecqmc';
 const MASTER_CREATOR_EMAIL = 'fouzi.cse@gmail.com';
 
 function getSystemTransporter() {
-  // Gmail SSL Transporter
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
     auth: {
       user: SYSTEM_OUTGOING_EMAIL,
-      pass: SYSTEM_OUTGOING_PASS.trim()
+      pass: SYSTEM_OUTGOING_PASS
     },
     tls: {
       rejectUnauthorized: false

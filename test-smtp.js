@@ -1,16 +1,15 @@
 const nodemailer = require('nodemailer');
 
 async function testGmail() {
-  console.log('Testing Gmail Transporters...');
+  console.log('Testing Gmail Transporter with App Password...');
 
-  // Config A: Port 465 SSL
   const transporterSSL = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,
     auth: {
       user: 'fzfemass.1021@gmail.com',
-      pass: 'fzfemass@21@(fzm)@g1#f2'
+      pass: 'gxsp shuw jeje cqmc'
     },
     tls: {
       rejectUnauthorized: false
@@ -20,45 +19,23 @@ async function testGmail() {
   try {
     console.log('Verifying SSL Transporter (465)...');
     await transporterSSL.verify();
-    console.log('SSL Transporter verified successfully!');
+    console.log('✅ SSL Transporter VERIFIED SUCCESSFULLY!');
     
     const info = await transporterSSL.sendMail({
-      from: '"WiFiPulse Tester" <fzfemass.1021@gmail.com>',
+      from: '"WiFiPulse System" <fzfemass.1021@gmail.com>',
       to: 'fouzi.cse@gmail.com',
-      subject: '🧪 Diagnostic Test Email from WiFiPulse (SSL 465)',
-      text: 'If you receive this email, your Nodemailer Gmail SMTP setup is working 100% perfectly!'
+      subject: '🎉 SUCCESS: WiFiPulse Automated Email System Connected!',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #16a34a; border-radius: 12px; padding: 24px;">
+          <h2 style="color: #16a34a; margin-top: 0;">🎉 Gmail App Password Verified!</h2>
+          <p>Your WiFiPulse platform has successfully connected to Gmail SMTP.</p>
+          <p>Venue owners and platform creators will now receive automated lead and setup alerts instantly!</p>
+        </div>
+      `
     });
-    console.log('Test Email Sent Successfully! Message ID:', info.messageId);
+    console.log('🚀 TEST EMAIL DISPATCHED SUCCESSFULLY! Message ID:', info.messageId);
   } catch (err) {
-    console.error('SSL Transporter Error:', err);
-
-    console.log('\nTrying Config B: Port 587 TLS...');
-    const transporterTLS = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: 'fzfemass.1021@gmail.com',
-        pass: 'fzfemass@21@(fzm)@g1#f2'
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-
-    try {
-      await transporterTLS.verify();
-      console.log('TLS Transporter verified successfully!');
-      const info = await transporterTLS.sendMail({
-        from: '"WiFiPulse Tester" <fzfemass.1021@gmail.com>',
-        to: 'fouzi.cse@gmail.com',
-        subject: '🧪 Diagnostic Test Email from WiFiPulse (TLS 587)',
-        text: 'If you receive this email, TLS 587 is working!'
-      });
-      console.log('TLS Email Sent Successfully! Message ID:', info.messageId);
-    } catch (err2) {
-      console.error('TLS Transporter Error:', err2);
-    }
+    console.error('❌ SSL Transporter Error:', err);
   }
 }
 
