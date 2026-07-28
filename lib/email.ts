@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { generateStyledQrCodeBuffer } from './qr-server';
+import QRCode from 'qrcode';
 import { CapturedLead, VenueSettings } from './storage';
 import { encodeVenueParams } from './wifi';
 import { generateTabletopStandPdfBuffer } from './pdf';
@@ -41,12 +41,14 @@ export async function sendVenueWelcomeEmail(
 
   try {
     // Generate high-resolution QR code PNG buffer
-    const qrBuffer = await generateStyledQrCodeBuffer(
-      portalUrl,
-      venue.logoUrl,
-      venue.accentColor || '#16a34a',
-      500
-    );
+    const qrBuffer = await QRCode.toBuffer(portalUrl, {
+      width: 500,
+      margin: 1,
+      color: {
+        dark: venue.accentColor || '#16a34a',
+        light: '#ffffff'
+      }
+    });
 
     // Generate Printable Tabletop Stand PDF Buffer
     const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
@@ -137,12 +139,17 @@ export async function sendCreatorVenueAlertEmail(
   const toList = Array.from(new Set(recipients)).join(', ');
 
   try {
-    const qrBuffer = await generateStyledQrCodeBuffer(
-      portalUrl,
-      venue.logoUrl,
-      venue.accentColor || '#16a34a',
-      500
-    );
+    // Generate high-resolution QR code PNG buffer (standard)
+    const qrBuffer = await QRCode.toBuffer(portalUrl, {
+      width: 500,
+      margin: 1,
+      color: {
+        dark: venue.accentColor || '#16a34a',
+        light: '#ffffff'
+      }
+    });
+
+    // Generate Printable Tabletop Stand PDF Buffer (This naturally embeds the logo inside the PDF)
     const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
 
     const transporter = getSystemTransporter();
