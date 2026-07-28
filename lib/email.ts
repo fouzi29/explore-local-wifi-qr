@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
 import { CapturedLead, VenueSettings } from './storage';
 import { encodeVenueParams } from './wifi';
+import { generateTabletopStandPdfBuffer } from './pdf';
 
 const SYSTEM_OUTGOING_EMAIL = 'fzfemass.1021@gmail.com';
 const SYSTEM_OUTGOING_PASS = 'gxspshuwjejecqmc';
@@ -23,15 +24,20 @@ function getSystemTransporter() {
 }
 
 /**
- * 1. Welcome Email sent to Venue Owner immediately after registration with Embedded QR Code & Printable Stand Attachment
+ * 1. Welcome Email sent to Venue Owner immediately after registration with Embedded QR Code & PDF Stand Attachment
  */
 export async function sendVenueWelcomeEmail(
   venue: VenueSettings
 ): Promise<{ success: boolean; message: string }> {
   const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
   
-  const { s, p } = encodeVenueParams(venue.wifi.ssid, venue.wifi.password);
-  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`;
+  const { s, p, e, l } = encodeVenueParams(
+    venue.wifi.ssid,
+    venue.wifi.password,
+    venue.smtp?.notifyEmail,
+    venue.logoUrl
+  );
+  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
 
   try {
     // Generate high-resolution QR code PNG buffer
@@ -44,42 +50,14 @@ export async function sendVenueWelcomeEmail(
       }
     });
 
-    // Printable Stand HTML Attachment
-    const printableStandHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>${venue.name} - Printable Tabletop QR Stand</title>
-</head>
-<body style="font-family: Arial, sans-serif; background: #090d16; padding: 40px; text-align: center; color: white;">
-  <div style="background: white; color: #0f172a; max-width: 440px; margin: 0 auto; padding: 32px; border-radius: 24px; border: 4px solid #e2e8f0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);">
-    <div style="background: #0f172a; color: white; padding: 16px; border-radius: 16px; margin-bottom: 20px;">
-      <h1 style="margin: 0; font-size: 22px; text-transform: uppercase;">${venue.name}</h1>
-      <p style="color: #16a34a; font-weight: bold; margin-top: 4px; font-size: 13px;">${venue.tagline || 'Guest Wi-Fi Access'}</p>
-    </div>
-    
-    <h2 style="font-size: 20px; font-weight: 900; margin-top: 10px; color: #0f172a;">FREE HIGH-SPEED WI-FI</h2>
-    <p style="color: #64748b; font-size: 12px; margin-bottom: 20px;">Point camera to scan & unlock Wi-Fi access</p>
-    
-    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; border: 2px solid #e2e8f0; display: inline-block;">
-      <img src="cid:qrcode_image" style="width: 220px; height: 220px; display: block; margin: 0 auto; border-radius: 8px;" />
-    </div>
-
-    <div style="border-top: 2px solid #e2e8f0; margin-top: 20px; padding-top: 16px; font-size: 13px; color: #334155;">
-      <p style="margin: 4px 0;"><strong>Network Name (SSID):</strong> ${venue.wifi.ssid}</p>
-      <p style="margin: 4px 0;"><strong>Password:</strong> ${venue.wifi.password}</p>
-    </div>
-  </div>
-</body>
-</html>
-    `;
+    // Generate Printable Tabletop Stand PDF Buffer
+    const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
 
     const transporter = getSystemTransporter();
     const info = await transporter.sendMail({
       from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
-      subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal & Stand Attached`,
+      subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal & Printable PDF Attached`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
           
@@ -89,7 +67,7 @@ export async function sendVenueWelcomeEmail(
           </div>
 
           <p style="font-size: 15px; color: #374151; line-height: 1.6;">
-            Congratulations! Your QR Wi-Fi Lead Capture Portal has been created successfully. Below is your official QR code image and attached printable tabletop stand document!
+            Congratulations! Your QR Wi-Fi Lead Capture Portal has been created successfully. Below is your official QR code image and attached <strong>Printable PDF Tabletop Stand</strong>!
           </p>
 
           <!-- EMBEDDED QR CODE IMAGE -->
@@ -127,15 +105,15 @@ export async function sendVenueWelcomeEmail(
           cid: 'qrcode_image'
         },
         {
-          filename: `${venue.slug}_tabletop_stand.html`,
-          content: Buffer.from(printableStandHtml, 'utf-8'),
-          contentType: 'text/html'
+          filename: `${venue.slug}_tabletop_stand.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
         }
       ]
     });
 
-    console.log('Welcome email dispatched to', recipientEmail, 'MessageID:', info.messageId);
-    return { success: true, message: `Welcome email with attached QR code sent to ${recipientEmail}` };
+    console.log('Welcome email with PDF attachment dispatched to', recipientEmail, 'MessageID:', info.messageId);
+    return { success: true, message: `Welcome email with attached PDF sent to ${recipientEmail}` };
   } catch (err: any) {
     console.error('Failed to send venue welcome email:', err);
     return { success: false, message: err?.message || 'Failed welcome email' };

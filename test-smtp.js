@@ -1,8 +1,9 @@
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
+const PDFDocument = require('pdfkit');
 
-async function testWelcomeEmail() {
-  console.log('Testing Venue Welcome Email with Embedded QR Code & Stand Attachment...');
+async function testPdfWelcomeEmail() {
+  console.log('Testing Venue Welcome Email with PDF Tabletop Stand Attachment...');
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -19,51 +20,44 @@ async function testWelcomeEmail() {
 
   const qrBuffer = await QRCode.toBuffer('https://explore-local-wifi-qr.vercel.app/v/rustic-roaster', { width: 500 });
 
-  const printableStandHtml = `
-    <!DOCTYPE html><html><body style="font-family:Arial;text-align:center;padding:40px;background:#0f172a;color:white;">
-      <div style="background:white;color:#0f172a;max-width:400px;margin:0 auto;padding:30px;border-radius:20px;">
-        <h2>RUSTIC ROASTER COFFEE</h2>
-        <p style="color:#16a34a;font-weight:bold;">FREE HIGH-SPEED GUEST WI-FI</p>
-        <img src="cid:qrcode_image" style="width:200px;height:200px;" />
-        <p>Scan to Connect & Unlock Local Perks</p>
-      </div>
-    </body></html>
-  `;
+  // Generate PDF buffer
+  const pdfBuffer = await new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 40 });
+    const buffers = [];
+    doc.on('data', buffers.push.bind(buffers));
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+
+    doc.fontSize(24).font('Helvetica-Bold').text('RUSTIC ROASTER COFFEE', { align: 'center' });
+    doc.fontSize(16).fillColor('#16a34a').text('FREE GUEST WI-FI ACCESS', { align: 'center' });
+    doc.moveDown();
+    doc.image(qrBuffer, (doc.page.width - 200) / 2, doc.y, { width: 200, height: 200 });
+    doc.end();
+  });
 
   try {
     const info = await transporter.sendMail({
       from: '"WiFiPulse System" <fzfemass.1021@gmail.com>',
       to: 'fouzi.cse@gmail.com',
-      subject: '🎉 TEST: Opening Welcome Email with Embedded QR & Printable Stand Attached',
+      subject: '🎉 TEST: Printable PDF Tabletop Stand Attached',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #16a34a; border-radius: 12px; padding: 24px;">
           <h2 style="color: #16a34a; margin-top: 0;">🎉 Welcome to WiFiPulse!</h2>
-          <p>Your venue portal for <strong>Rustic Roaster Coffee</strong> is Live!</p>
-          <div style="text-align: center; margin: 20px 0; background: #f8fafc; padding: 20px; border-radius: 12px;">
-            <h3>Your Tabletop QR Code:</h3>
-            <img src="cid:qrcode_image" style="width: 200px; height: 200px; border-radius: 12px;" />
-          </div>
-          <p>Printable tabletop stand HTML document is attached to this email!</p>
+          <p>Your printable <strong>PDF Tabletop Stand</strong> is attached to this email!</p>
         </div>
       `,
       attachments: [
         {
-          filename: 'rustic-roaster_qr_code.png',
-          content: qrBuffer,
-          cid: 'qrcode_image'
-        },
-        {
-          filename: 'rustic-roaster_tabletop_stand.html',
-          content: Buffer.from(printableStandHtml, 'utf-8'),
-          contentType: 'text/html'
+          filename: 'rustic-roaster_tabletop_stand.pdf',
+          content: pdfBuffer,
+          contentType: 'application/pdf'
         }
       ]
     });
 
-    console.log('✅ Welcome email with embedded QR code & attachment sent successfully! MessageID:', info.messageId);
+    console.log('✅ Welcome email with PDF attachment sent successfully! MessageID:', info.messageId);
   } catch (err) {
     console.error('❌ Error sending welcome email:', err);
   }
 }
 
-testWelcomeEmail();
+testPdfWelcomeEmail();
