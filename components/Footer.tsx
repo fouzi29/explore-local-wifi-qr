@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ compact = false }) => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 mt-3 pt-3 border-t border-slate-900/60 text-center text-[11px] text-slate-600">
-        © 2026 WiFiPulse • Powered by Next.js & Vercel
+        © 2026 MD. Fouzi • Powered by Next.js & Vercel
       </div>
     </footer>
   );
