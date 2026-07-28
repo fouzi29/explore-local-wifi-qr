@@ -34,7 +34,7 @@ export const Footer: React.FC<FooterProps> = ({ compact = false }) => {
 
           {/* LinkedIn Profile */}
           <a
-            href="https://www.linkedin.com/in/fouzi"
+            href="https://www.linkedin.com/in/mdfouzi/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-blue-500/40 text-[11px] font-semibold transition-all group"
@@ -46,7 +46,7 @@ export const Footer: React.FC<FooterProps> = ({ compact = false }) => {
 
           {/* Fiverr Profile */}
           <a
-            href="https://www.fiverr.com/fouzi"
+            href="https://www.fiverr.com/s/o8DxWjG"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-800 hover:border-emerald-500/40 text-[11px] font-semibold transition-all group"
