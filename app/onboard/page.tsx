@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon, Upload, Link2 } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
-import { encodeWifiParams } from '@/lib/wifi';
+import { encodeVenueParams } from '@/lib/wifi';
 import { generateStyledQrCode } from '@/lib/qr';
 
 const BRAND_COLORS = [
@@ -115,10 +115,10 @@ export default function OnboardPage() {
       });
       saveVenueSettings(newVenueSettings);
 
-      const { s, p } = encodeWifiParams(ssid.trim(), password.trim());
+      const { s, p, e, l } = encodeVenueParams(ssid.trim(), password.trim(), notifyEmail.trim(), logoUrl.trim());
       const portalUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`
-        : `https://explore-local-wifi-qr.vercel.app/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`;
+        ? `${window.location.origin}/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`
+        : `https://explore-local-wifi-qr.vercel.app/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
 
       const dataUrl = await generateStyledQrCode(portalUrl, logoUrl.trim() || undefined, safeColor, 400);
       setQrDataUrl(dataUrl);
@@ -578,7 +578,16 @@ export default function OnboardPage() {
                 {/* QR Code */}
                 <div className="my-5 p-4 bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-inner flex flex-col items-center">
                   {qrDataUrl ? (
-                    <img src={qrDataUrl} alt="Tabletop QR Stand" className="w-52 h-52 rounded-lg" />
+                    <div className="relative inline-block">
+                      <img src={qrDataUrl} alt="Tabletop QR Stand" className="w-52 h-52 rounded-lg" />
+                      {createdVenue.logoUrl && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-11 h-11 rounded-xl bg-white p-1 shadow-md border border-slate-200 flex items-center justify-center">
+                            <img src={createdVenue.logoUrl} alt={createdVenue.name} className="w-full h-full object-contain rounded-lg" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ) : (
                     <div className="w-52 h-52 bg-slate-200 flex items-center justify-center text-xs text-slate-500">
                       Generating QR...

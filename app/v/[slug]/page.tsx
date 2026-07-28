@@ -8,7 +8,7 @@ import { WifiCard } from '@/components/WifiCard';
 import { LocalDeals } from '@/components/LocalDeals';
 import { Footer } from '@/components/Footer';
 import { getVenueBySlug, VenueSettings, CapturedLead } from '@/lib/storage';
-import { decodeWifiParams } from '@/lib/wifi';
+import { decodeVenueParams } from '@/lib/wifi';
 import { Wifi, ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,14 +22,14 @@ const DEFAULT_VENUE: VenueSettings = {
   wifi: { ssid: 'Guest_WiFi', password: 'FreeWiFi2026', encryption: 'WPA2' },
   deals: [],
   smtp: {
-    enabled: false,
+    enabled: true,
     host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    port: 465,
+    secure: true,
     user: 'fzfemass.1021@gmail.com',
-    pass: '',
-    fromName: '',
-    fromEmail: '',
+    pass: 'gxspshuwjejecqmc',
+    fromName: 'Explore Local Wi-Fi',
+    fromEmail: 'fzfemass.1021@gmail.com',
     notifyEmail: ''
   }
 };
@@ -38,6 +38,8 @@ function RestaurantPortalContent({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
   const sParam = searchParams.get('s');
   const pParam = searchParams.get('p');
+  const eParam = searchParams.get('e');
+  const lParam = searchParams.get('l');
 
   const [settings, setSettings] = useState<VenueSettings | null>(null);
   const [unlockedLead, setUnlockedLead] = useState<CapturedLead | null>(null);
@@ -49,41 +51,64 @@ function RestaurantPortalContent({ slug }: { slug: string }) {
         const fetched = (data.success && data.settings) ? data.settings : getVenueBySlug(slug);
         let venueObj: VenueSettings = fetched || DEFAULT_VENUE;
         
-        // If s and p encoded parameters exist in the QR code URL, override venue Wi-Fi credentials
-        if (sParam && pParam) {
-          const decoded = decodeWifiParams(sParam, pParam);
-          if (decoded && decoded.ssid && decoded.password) {
-            venueObj = {
-              ...venueObj,
-              wifi: {
-                ...venueObj.wifi,
-                ssid: decoded.ssid,
-                password: decoded.password
-              }
-            };
-          }
+        // Decode encoded parameters from URL (SSID, Password, Notification Email, Logo URL)
+        const decoded = decodeVenueParams(sParam, pParam, eParam, lParam);
+        
+        if (decoded.ssid || decoded.password || decoded.notifyEmail || decoded.logoUrl) {
+          venueObj = {
+            ...venueObj,
+            logoUrl: decoded.logoUrl || venueObj.logoUrl,
+            wifi: {
+              ...venueObj.wifi,
+              ssid: decoded.ssid || venueObj.wifi.ssid,
+              password: decoded.password || venueObj.wifi.password
+            },
+            smtp: {
+              ...venueObj.smtp,
+              enabled: true,
+              notifyEmail: decoded.notifyEmail || venueObj.smtp?.notifyEmail || '',
+              host: 'smtp.gmail.com',
+              port: 465,
+              secure: true,
+              user: 'fzfemass.1021@gmail.com',
+              pass: 'gxspshuwjejecqmc',
+              fromName: `${venueObj.name} Wi-Fi`,
+              fromEmail: 'fzfemass.1021@gmail.com'
+            }
+          };
         }
         setSettings(venueObj);
       })
       .catch(() => {
         const fetched = getVenueBySlug(slug);
         let venueObj: VenueSettings = fetched || DEFAULT_VENUE;
-        if (sParam && pParam) {
-          const decoded = decodeWifiParams(sParam, pParam);
-          if (decoded && decoded.ssid && decoded.password) {
-            venueObj = {
-              ...venueObj,
-              wifi: {
-                ...venueObj.wifi,
-                ssid: decoded.ssid,
-                password: decoded.password
-              }
-            };
-          }
+        const decoded = decodeVenueParams(sParam, pParam, eParam, lParam);
+        if (decoded.ssid || decoded.password || decoded.notifyEmail || decoded.logoUrl) {
+          venueObj = {
+            ...venueObj,
+            logoUrl: decoded.logoUrl || venueObj.logoUrl,
+            wifi: {
+              ...venueObj.wifi,
+              ssid: decoded.ssid || venueObj.wifi.ssid,
+              password: decoded.password || venueObj.wifi.password
+            },
+            smtp: {
+              ...venueObj.smtp,
+              enabled: true,
+              notifyEmail: decoded.notifyEmail || venueObj.smtp?.notifyEmail || '',
+              host: 'smtp.gmail.com',
+              port: 465,
+              secure: true,
+              user: 'fzfemass.1021@gmail.com',
+              pass: 'gxspshuwjejecqmc',
+              fromName: `${venueObj.name} Wi-Fi`,
+              fromEmail: 'fzfemass.1021@gmail.com'
+            }
+          };
         }
         setSettings(venueObj);
       });
-  }, [slug, sParam, pParam]);
+  }, [slug, sParam, pParam, eParam, lParam]);
 
   if (!settings) {
     return (
@@ -105,6 +130,18 @@ function RestaurantPortalContent({ slug }: { slug: string }) {
         
         {/* Venue Hero Banner */}
         <div className="text-center space-y-3 relative py-4">
+          
+          {/* Render Full Logo Image if present */}
+          {settings.logoUrl && (
+            <div className="flex justify-center mb-2">
+              <img
+                src={settings.logoUrl}
+                alt={settings.name}
+                className="max-h-20 max-w-[240px] object-contain rounded-xl"
+              />
+            </div>
+          )}
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
             <Wifi className="w-3.5 h-3.5 animate-pulse" /> Official Guest Wi-Fi Portal
           </div>
@@ -124,6 +161,7 @@ function RestaurantPortalContent({ slug }: { slug: string }) {
             <LeadForm
               venueId={settings.id}
               venueName={settings.name}
+              notifyEmail={settings.smtp?.notifyEmail}
               onSuccess={lead => setUnlockedLead(lead)}
             />
           </div>

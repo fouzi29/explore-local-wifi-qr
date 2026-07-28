@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import QRCode from 'qrcode';
 import { CapturedLead, VenueSettings } from './storage';
-import { encodeWifiParams } from './wifi';
+import { encodeVenueParams } from './wifi';
 
 const SYSTEM_OUTGOING_EMAIL = 'fzfemass.1021@gmail.com';
 const SYSTEM_OUTGOING_PASS = 'gxspshuwjejecqmc';
@@ -30,7 +30,7 @@ export async function sendVenueWelcomeEmail(
 ): Promise<{ success: boolean; message: string }> {
   const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
   
-  const { s, p } = encodeWifiParams(venue.wifi.ssid, venue.wifi.password);
+  const { s, p } = encodeVenueParams(venue.wifi.ssid, venue.wifi.password);
   const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`;
 
   try {

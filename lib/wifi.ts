@@ -23,27 +23,52 @@ function escapeWifiField(str: string): string {
 }
 
 /**
- * Base64 helper for encoding SSID and Password in Tabletop QR URLs
+ * Safe Base64 helpers for encoding SSID, Password, Owner Email, and Logo URL in Tabletop QR URLs
  */
-export function encodeWifiParams(ssid: string, password: string): { s: string; p: string } {
-  try {
-    const s = typeof window !== 'undefined' ? btoa(encodeURIComponent(ssid)) : Buffer.from(ssid).toString('base64');
-    const p = typeof window !== 'undefined' ? btoa(encodeURIComponent(password)) : Buffer.from(password).toString('base64');
-    return { s, p };
-  } catch (e) {
-    return { s: encodeURIComponent(ssid), p: encodeURIComponent(password) };
-  }
+export function encodeVenueParams(
+  ssid: string,
+  password: string,
+  notifyEmail?: string,
+  logoUrl?: string
+): { s: string; p: string; e: string; l: string } {
+  const safeBtoa = (str: string) => {
+    if (!str) return '';
+    try {
+      return typeof window !== 'undefined' ? btoa(encodeURIComponent(str)) : Buffer.from(str).toString('base64');
+    } catch (e) {
+      return encodeURIComponent(str);
+    }
+  };
+
+  return {
+    s: safeBtoa(ssid),
+    p: safeBtoa(password),
+    e: safeBtoa(notifyEmail || ''),
+    l: safeBtoa(logoUrl || '')
+  };
 }
 
-export function decodeWifiParams(sParam: string, pParam: string): { ssid: string; password: string } | null {
-  if (!sParam || !pParam) return null;
-  try {
-    const ssid = typeof window !== 'undefined' ? decodeURIComponent(atob(sParam)) : Buffer.from(sParam, 'base64').toString('utf-8');
-    const password = typeof window !== 'undefined' ? decodeURIComponent(atob(pParam)) : Buffer.from(pParam, 'base64').toString('utf-8');
-    return { ssid, password };
-  } catch (e) {
-    return { ssid: decodeURIComponent(sParam), password: decodeURIComponent(pParam) };
-  }
+export function decodeVenueParams(
+  sParam?: string | null,
+  pParam?: string | null,
+  eParam?: string | null,
+  lParam?: string | null
+): { ssid: string; password: string; notifyEmail: string; logoUrl: string } {
+  const safeAtob = (str?: string | null) => {
+    if (!str) return '';
+    try {
+      return typeof window !== 'undefined' ? decodeURIComponent(atob(str)) : Buffer.from(str, 'base64').toString('utf-8');
+    } catch (e) {
+      return decodeURIComponent(str);
+    }
+  };
+
+  return {
+    ssid: safeAtob(sParam),
+    password: safeAtob(pParam),
+    notifyEmail: safeAtob(eParam),
+    logoUrl: safeAtob(lParam)
+  };
 }
 
 export function downloadCsv(filename: string, rows: Record<string, any>[]) {

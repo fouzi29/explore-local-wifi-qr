@@ -8,10 +8,11 @@ import { CapturedLead } from '@/lib/storage';
 interface LeadFormProps {
   venueId: string;
   venueName: string;
+  notifyEmail?: string;
   onSuccess: (lead: CapturedLead) => void;
 }
 
-export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSuccess }) => {
+export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, notifyEmail, onSuccess }) => {
   const [name, setName] = useState('');
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [marketingConsent, setMarketingConsent] = useState(true);
@@ -44,6 +45,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           venueId,
+          venueName,
+          notifyEmail,
           name: name.trim(),
           emailOrPhone: emailOrPhone.trim(),
           interests: [],
