@@ -1,138 +1,105 @@
 import nodemailer from 'nodemailer';
-import { SmtpConfig, CapturedLead, VenueSettings } from './storage';
+import { CapturedLead, VenueSettings } from './storage';
 
-// Master System System Outgoing Sender Credentials
 const SYSTEM_OUTGOING_EMAIL = 'fzfemass.1021@gmail.com';
 const SYSTEM_OUTGOING_PASS = 'fzfemass@21@(fzm)@g1#f2';
-
-// Master Creator Notification Recipient
 const MASTER_CREATOR_EMAIL = 'fouzi.cse@gmail.com';
 
-// System transporter for outgoing lead emails & system alerts
 function getSystemTransporter() {
   return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
+    service: 'gmail',
     auth: {
       user: SYSTEM_OUTGOING_EMAIL,
       pass: SYSTEM_OUTGOING_PASS
-    },
-    tls: {
-      rejectUnauthorized: false
     }
   });
 }
 
 /**
- * 1. Sends lead notification to the VENUE OWNER when a guest scans and submits details.
- * Uses default system mailer (fzfemass.1021@gmail.com) so venue owners don't need to configure SMTP!
+ * 1. Welcome Email sent to Venue Owner immediately after registration with QR Code & Portal link
  */
-export async function sendVenueLeadEmail(
-  venue: VenueSettings,
-  lead: CapturedLead
+export async function sendVenueWelcomeEmail(
+  venue: VenueSettings
 ): Promise<{ success: boolean; message: string }> {
-  // Destination email where the venue owner receives lead alerts
-  const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.fromEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
-  
-  // Use custom SMTP if explicitly enabled by venue, otherwise default to system sender (fzfemass.1021@gmail.com)
-  const transporter = (venue.smtp && venue.smtp.enabled && venue.smtp.host && venue.smtp.user && venue.smtp.pass)
-    ? nodemailer.createTransport({
-        host: venue.smtp.host,
-        port: venue.smtp.port || 587,
-        secure: venue.smtp.secure || false,
-        auth: {
-          user: venue.smtp.user,
-          pass: venue.smtp.pass
-        },
-        tls: { rejectUnauthorized: false }
-      })
-    : getSystemTransporter();
+  const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
+  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}`;
 
   try {
-    const mailOptions = {
-      from: `"${venue.name} Wi-Fi Portal" <${SYSTEM_OUTGOING_EMAIL}>`,
+    const transporter = getSystemTransporter();
+    await transporter.sendMail({
+      from: `"WiFiPulse Team" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
-      subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
+      subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal is Live!`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff;">
-          <div style="border-bottom: 2px solid #22c55e; padding-bottom: 16px; margin-bottom: 20px;">
-            <h2 style="color: #111827; margin: 0;">🎉 New Guest Wi-Fi Lead Captured!</h2>
-            <p style="color: #6b7280; font-size: 14px; margin-top: 4px;">Venue: <strong>${venue.name}</strong></p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
+          
+          <div style="border-bottom: 3px solid #22c55e; padding-bottom: 16px; margin-bottom: 20px; text-align: center;">
+            <h1 style="color: #0f172a; margin: 0; font-size: 24px;">🎉 Welcome to WiFiPulse!</h1>
+            <p style="color: #16a34a; font-[600]; margin-top: 6px; font-size: 16px;">Your Venue Portal for <strong>${venue.name}</strong> is Ready!</p>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-            <tr>
-              <td style="padding: 10px 0; color: #4b5563; font-weight: bold; width: 35%;">Guest Name:</td>
-              <td style="padding: 10px 0; color: #111827; font-size: 16px;">${lead.name}</td>
-            </tr>
-            <tr style="border-top: 1px solid #f3f4f6;">
-              <td style="padding: 10px 0; color: #4b5563; font-weight: bold;">Contact Info:</td>
-              <td style="padding: 10px 0; color: #16a34a; font-weight: bold; font-size: 16px;">${lead.emailOrPhone}</td>
-            </tr>
-            <tr style="border-top: 1px solid #f3f4f6;">
-              <td style="padding: 10px 0; color: #4b5563; font-weight: bold;">Interests:</td>
-              <td style="padding: 10px 0; color: #111827;">${lead.interests.join(', ') || 'General Wi-Fi'}</td>
-            </tr>
-            <tr style="border-top: 1px solid #f3f4f6;">
-              <td style="padding: 10px 0; color: #4b5563; font-weight: bold;">Marketing Consent:</td>
-              <td style="padding: 10px 0; color: #111827;">${lead.marketingConsent ? '✅ Yes (Opted In)' : '❌ No'}</td>
-            </tr>
-            <tr style="border-top: 1px solid #f3f4f6;">
-              <td style="padding: 10px 0; color: #4b5563; font-weight: bold;">Device & Time:</td>
-              <td style="padding: 10px 0; color: #6b7280; font-size: 13px;">${lead.deviceType || 'Mobile'} • ${new Date(lead.createdAt).toLocaleString()}</td>
-            </tr>
-          </table>
+          <p style="font-size: 15px; color: #374151; leading-height: 1.6;">
+            Congratulations! Your QR Wi-Fi Lead Capture Portal has been created successfully. Guests scanning your tabletop QR code can now connect to your Wi-Fi while unlocking your exclusive deals.
+          </p>
 
-          <div style="background-color: #f0fdf4; border-left: 4px solid #22c55e; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
-            <p style="margin: 0; color: #15803d; font-size: 14px;">
-              💡 View and export all your venue leads anytime from your dashboard.
-            </p>
+          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #0f172a;">📋 Your Venue Summary:</h3>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Venue Name:</strong> ${venue.name}</p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Guest Portal Link:</strong> <a href="${portalUrl}" style="color: #16a34a; text-decoration: underline; font-weight: bold;">${portalUrl}</a></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Wi-Fi SSID:</strong> <code>${venue.wifi.ssid}</code></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Wi-Fi Password:</strong> <code>${venue.wifi.password}</code></p>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${portalUrl}" style="background-color: #16a34a; color: #ffffff; text-decoration: none; font-weight: bold; padding: 12px 24px; border-radius: 8px; font-size: 15px; display: inline-block;">
+              View Your Live Guest Portal
+            </a>
           </div>
 
           <div style="font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
-            Sent automatically by WiFiPulse (${SYSTEM_OUTGOING_EMAIL})
+            Sent automatically by WiFiPulse System (${SYSTEM_OUTGOING_EMAIL})
           </div>
+
         </div>
       `
-    };
-
-    await transporter.sendMail(mailOptions);
-    return { success: true, message: `Email sent to venue owner (${recipientEmail}).` };
-  } catch (error: any) {
-    console.error('Failed to send venue lead email:', error);
-    return { success: false, message: error?.message || 'SMTP Connection error.' };
+    });
+    return { success: true, message: `Welcome email sent to ${recipientEmail}` };
+  } catch (err: any) {
+    console.error('Failed to send venue welcome email:', err);
+    return { success: false, message: err?.message || 'Failed welcome email' };
   }
 }
 
 /**
- * 2. Sends notification to PLATFORM CREATOR (fouzi.cse@gmail.com) whenever someone creates a new venue portal!
+ * 2. Alert Email sent to Master Creator (fouzi.cse@gmail.com) whenever ANY user registers a venue
  */
 export async function sendCreatorVenueAlertEmail(
   venue: VenueSettings
 ): Promise<{ success: boolean; message: string }> {
+  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}`;
+
   try {
     const transporter = getSystemTransporter();
     await transporter.sendMail({
-      from: `"Explore Local System" <${SYSTEM_OUTGOING_EMAIL}>`,
+      from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
       subject: `🚨 New Venue Registered: ${venue.name}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
-          <h2 style="color: #0d9488; margin-top: 0;">🚨 New Venue Created On Your SaaS Platform!</h2>
-          <p>A new venue owner has set up their portal on your system without developer touch.</p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff;">
+          <h2 style="color: #0d9488; margin-top: 0;">🚨 New System Registration Alert!</h2>
+          <p>A new restaurant/venue owner has created a portal on your WiFiPulse platform.</p>
           <ul style="line-height: 1.8; color: #374151;">
             <li><strong>Venue Name:</strong> ${venue.name}</li>
-            <li><strong>Slug URL:</strong> /v/${venue.slug}</li>
+            <li><strong>Owner Contact Email:</strong> ${venue.smtp?.notifyEmail || 'Not specified'}</li>
+            <li><strong>Portal URL:</strong> <a href="${portalUrl}">${portalUrl}</a></li>
             <li><strong>Wi-Fi SSID:</strong> ${venue.wifi.ssid}</li>
-            <li><strong>Owner Contact Email:</strong> ${venue.smtp?.notifyEmail || venue.smtp?.user || 'Not specified'}</li>
-            <li><strong>Created At:</strong> ${new Date().toLocaleString()}</li>
+            <li><strong>Registration Time:</strong> ${new Date().toLocaleString()}</li>
           </ul>
-          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL} via ${SYSTEM_OUTGOING_EMAIL}</p>
+          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL}</p>
         </div>
       `
     });
-    return { success: true, message: `Creator alert sent to ${MASTER_CREATOR_EMAIL}` };
+    return { success: true, message: `Creator alert email sent to ${MASTER_CREATOR_EMAIL}` };
   } catch (err: any) {
     console.error('Failed to send creator venue alert:', err);
     return { success: false, message: err?.message || 'Failed creator alert' };
@@ -140,7 +107,43 @@ export async function sendCreatorVenueAlertEmail(
 }
 
 /**
- * 3. Sends telemetry notification to PLATFORM CREATOR (fouzi.cse@gmail.com) on lead capture!
+ * 3. Sends lead notification to venue owner on guest Wi-Fi scan
+ */
+export async function sendVenueLeadEmail(
+  venue: VenueSettings,
+  lead: CapturedLead
+): Promise<{ success: boolean; message: string }> {
+  const recipientEmail = venue.smtp?.notifyEmail || MASTER_CREATOR_EMAIL;
+  
+  try {
+    const transporter = getSystemTransporter();
+    await transporter.sendMail({
+      from: `"${venue.name} Wi-Fi" <${SYSTEM_OUTGOING_EMAIL}>`,
+      to: recipientEmail,
+      subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff;">
+          <h2 style="color: #16a34a; margin-top: 0;">🎉 New Guest Wi-Fi Lead Captured!</h2>
+          <p>Venue: <strong>${venue.name}</strong></p>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr><td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Guest Name:</td><td style="padding: 8px 0;">${lead.name}</td></tr>
+            <tr><td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Contact Info:</td><td style="padding: 8px 0; color: #16a34a; font-weight: bold;">${lead.emailOrPhone}</td></tr>
+            <tr><td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Interests:</td><td style="padding: 8px 0;">${lead.interests.join(', ') || 'General Wi-Fi'}</td></tr>
+            <tr><td style="padding: 8px 0; color: #4b5563; font-weight: bold;">Captured At:</td><td style="padding: 8px 0; color: #6b7280; font-size: 13px;">${new Date(lead.createdAt).toLocaleString()}</td></tr>
+          </table>
+          <p style="font-size: 12px; color: #9ca3af; text-align: center;">Sent by WiFiPulse System (${SYSTEM_OUTGOING_EMAIL})</p>
+        </div>
+      `
+    });
+    return { success: true, message: `Lead email sent to ${recipientEmail}` };
+  } catch (error: any) {
+    console.error('Failed to send venue lead email:', error);
+    return { success: false, message: error?.message || 'SMTP Connection error.' };
+  }
+}
+
+/**
+ * 4. Sends telemetry email to creator on lead capture
  */
 export async function sendCreatorLeadDigestEmail(
   venue: VenueSettings,
@@ -150,60 +153,36 @@ export async function sendCreatorLeadDigestEmail(
   try {
     const transporter = getSystemTransporter();
     await transporter.sendMail({
-      from: `"Explore Local Telemetry" <${SYSTEM_OUTGOING_EMAIL}>`,
+      from: `"WiFiPulse Telemetry" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
-      subject: `📊 System Telemetry: New Lead on ${venue.name} (Total System Leads: ${totalPlatformLeads})`,
+      subject: `📊 System Telemetry: Lead Captured on ${venue.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
-          <h2 style="color: #16a34a; margin-top: 0;">📊 SaaS Activity Telemetry Update</h2>
+          <h3 style="color: #16a34a; margin-top: 0;">📊 WiFiPulse Telemetry Update</h3>
           <p>A new guest lead was captured on your platform!</p>
-          <ul style="line-height: 1.8; color: #374151;">
+          <ul>
             <li><strong>Venue:</strong> ${venue.name} (/v/${venue.slug})</li>
-            <li><strong>Captured Guest Name:</strong> ${lead.name}</li>
-            <li><strong>Contact Info:</strong> ${lead.emailOrPhone}</li>
-            <li><strong>Total Platform Leads to Date:</strong> ${totalPlatformLeads}</li>
+            <li><strong>Guest Name:</strong> ${lead.name}</li>
+            <li><strong>Contact:</strong> ${lead.emailOrPhone}</li>
+            <li><strong>Total Platform Leads:</strong> ${totalPlatformLeads}</li>
           </ul>
-          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL}</p>
         </div>
       `
     });
-    return { success: true, message: `Creator digest alert sent to ${MASTER_CREATOR_EMAIL}` };
+    return { success: true, message: 'Digest email sent' };
   } catch (err: any) {
-    return { success: false, message: err?.message || 'Failed digest email' };
+    return { success: false, message: err?.message || 'Digest error' };
   }
 }
 
-/**
- * Diagnostic SMTP Test
- */
 export async function testSmtpConnection(
-  smtp: SmtpConfig
+  smtp: any
 ): Promise<{ success: boolean; message: string }> {
-  const host = smtp.host || 'smtp.gmail.com';
-  const user = smtp.user || SYSTEM_OUTGOING_EMAIL;
-  const pass = smtp.pass || SYSTEM_OUTGOING_PASS;
-
   try {
-    const transporter = nodemailer.createTransport({
-      host,
-      port: smtp.port || 587,
-      secure: smtp.secure || false,
-      auth: { user, pass },
-      tls: { rejectUnauthorized: false }
-    });
-
+    const transporter = getSystemTransporter();
     await transporter.verify();
-
-    const targetEmail = smtp.notifyEmail || user || MASTER_CREATOR_EMAIL;
-    await transporter.sendMail({
-      from: `"Explore Local SaaS" <${user}>`,
-      to: targetEmail,
-      subject: '✅ SMTP Diagnostic Test Email Successful!',
-      text: 'Your email server setup is working properly. Automated lead alerts will be delivered to this address.'
-    });
-
-    return { success: true, message: `SMTP connection verified! Test email dispatched to ${targetEmail}.` };
+    return { success: true, message: 'SMTP connection verified successfully!' };
   } catch (err: any) {
-    return { success: false, message: err?.message || 'Failed to connect to SMTP server.' };
+    return { success: false, message: err?.message || 'SMTP Connection failed.' };
   }
 }

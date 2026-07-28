@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getVenueSettings, saveVenueSettings } from '@/lib/storage';
-import { sendCreatorVenueAlertEmail } from '@/lib/email';
+import { sendVenueWelcomeEmail, sendCreatorVenueAlertEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -16,12 +16,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Invalid venue configuration payload.' }, { status: 400 });
     }
 
+    // Save to storage
     saveVenueSettings(body);
 
-    // Notify Platform Creator (fouzi.cse@gmail.com) when a venue portal is created/updated
-    sendCreatorVenueAlertEmail(body).catch(e => console.error('Creator alert error', e));
+    // 1. Send Welcome Email to newly registered Venue Owner
+    const welcomeResult = await sendVenueWelcomeEmail(body);
 
-    return NextResponse.json({ success: true, settings: body });
+    // 2. Send Alert Email to Creator (fouzi.cse@gmail.com)
+    const creatorResult = await sendCreatorVenueAlertEmail(body);
+
+    return NextResponse.json({
+      success: true,
+      settings: body,
+      welcomeEmailStatus: welcomeResult,
+      creatorEmailStatus: creatorResult
+    });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err?.message || 'Failed to save venue settings.' }, { status: 500 });
   }
