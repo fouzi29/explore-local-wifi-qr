@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getVenueLeads, addCapturedLead, getVenueSettings } from '@/lib/storage';
-import { sendLeadNotificationEmail } from '@/lib/email';
+import { getVenueLeads, addCapturedLead, getVenueSettings, getPlatformTelemetry } from '@/lib/storage';
+import { sendVenueLeadEmail, sendCreatorLeadDigestEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -30,17 +30,24 @@ export async function POST(request: Request) {
       deviceType: deviceType || 'Mobile Web Scanner'
     });
 
-    // Send optional SMTP lead notification
     const venueSettings = getVenueSettings(venueId);
-    let emailStatus = null;
-    if (venueSettings && venueSettings.smtp && venueSettings.smtp.enabled) {
-      emailStatus = await sendLeadNotificationEmail(venueSettings, lead);
-    }
+    const telemetry = getPlatformTelemetry();
+
+    // 1. Send lead email to the VENUE OWNER
+    const venueEmailRes = await sendVenueLeadEmail(venueSettings, lead);
+
+    // 2. Send master telemetry alert email to CREATOR (fouzi.cse@gmail.com)
+    const creatorEmailRes = await sendCreatorLeadDigestEmail(
+      venueSettings,
+      lead,
+      telemetry.totalLeadsCaptured
+    );
 
     return NextResponse.json({
       success: true,
       lead,
-      emailStatus
+      venueEmailStatus: venueEmailRes,
+      creatorEmailStatus: creatorEmailRes
     });
   } catch (error: any) {
     return NextResponse.json(
