@@ -29,13 +29,13 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
       width: 400,
       margin: 1,
       color: {
-        dark: '#0f172a',
+        dark: settings.accentColor || '#0f172a',
         light: '#ffffff'
       }
     })
       .then(url => setQrDataUrl(url))
       .catch(err => console.error('Failed to render QR', err));
-  }, [targetContent]);
+  }, [targetContent, settings.accentColor]);
 
   const handlePrint = () => {
     window.print();
@@ -160,14 +160,20 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
           id="printable-stand"
           className="w-full max-w-sm sm:max-w-md bg-white text-slate-900 rounded-3xl p-5 sm:p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[520px] sm:min-h-[580px] relative overflow-hidden"
         >
-          {/* Decorative Top Arch */}
-          <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-6 shadow-md">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <Wifi className="w-6 h-6 text-emerald-400" />
-              <span className="font-extrabold tracking-tight text-lg uppercase">{settings.name}</span>
-            </div>
-            <p className="text-xs text-emerald-400 font-semibold">{settings.tagline || 'Guest Wi-Fi Access'}</p>
-          </div>
+                {/* Decorative Top Arch */}
+                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-6 shadow-md flex items-center justify-center gap-3">
+                  {settings.logoUrl ? (
+                    <img src={settings.logoUrl} alt={settings.name} className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <Wifi className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <span className="font-extrabold tracking-tight text-lg uppercase block">{settings.name}</span>
+                    <p className="text-xs text-emerald-400 font-semibold">{settings.tagline || 'Guest Wi-Fi Access'}</p>
+                  </div>
+                </div>
 
           <div className="space-y-1">
             <h2 className="text-2xl font-black text-slate-950 uppercase tracking-tight leading-tight">

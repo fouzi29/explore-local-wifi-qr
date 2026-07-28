@@ -1,13 +1,22 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Save, Mail, Wifi, Tag, Check, Plus, Trash2 } from 'lucide-react';
+import { Save, Mail, Wifi, Tag, Check, Plus, Trash2, Palette, Image as ImageIcon } from 'lucide-react';
 import { VenueSettings, SmtpConfig, VenueDeal } from '@/lib/storage';
 
 interface AdminSettingsFormProps {
   settings: VenueSettings;
   onSave: (updated: VenueSettings) => void;
 }
+
+const BRAND_COLORS = [
+  { name: 'Emerald Green', hex: '#16a34a' },
+  { name: 'Sapphire Blue', hex: '#2563eb' },
+  { name: 'Amber Gold', hex: '#d97706' },
+  { name: 'Crimson Red', hex: '#dc2626' },
+  { name: 'Violet Purple', hex: '#7c3aed' },
+  { name: 'Midnight Slate', hex: '#0f172a' },
+];
 
 export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, onSave }) => {
   const [activeSubTab, setActiveSubTab] = useState<'wifi' | 'smtp' | 'deals'>('wifi');
@@ -16,6 +25,8 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
   const [name, setName] = useState(settings.name);
   const [tagline, setTagline] = useState(settings.tagline);
   const [welcomeMessage, setWelcomeMessage] = useState(settings.welcomeMessage);
+  const [logoUrl, setLogoUrl] = useState(settings.logoUrl || '');
+  const [accentColor, setAccentColor] = useState(settings.accentColor || '#16a34a');
   const [ssid, setSsid] = useState(settings.wifi.ssid);
   const [password, setPassword] = useState(settings.wifi.password);
   const [encryption, setEncryption] = useState(settings.wifi.encryption);
@@ -28,7 +39,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
     secure: false,
     user: 'fzfemass.1021@gmail.com',
     pass: 'fzfemass@21@(fzm)@g1#f2',
-    fromName: settings.name + ' Wi-Fi Portal',
+    fromName: settings.name + ' Wi-Fi',
     fromEmail: 'fzfemass.1021@gmail.com',
     notifyEmail: ''
   });
@@ -49,6 +60,8 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
       name,
       tagline,
       welcomeMessage,
+      logoUrl: logoUrl.trim() || undefined,
+      accentColor,
       wifi: {
         ssid,
         password,
@@ -149,7 +162,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
       {activeSubTab === 'wifi' && (
         <form onSubmit={handleSaveAll} className="glass-card p-6 rounded-2xl border border-slate-800 space-y-4">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2">
-            Venue Info & Wi-Fi Credentials
+            Venue Info, Logo & Styling
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -174,6 +187,54 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
                 value={tagline}
                 onChange={e => setTagline(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Logo URL Input */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-emerald-400" /> Venue Logo Image URL
+            </label>
+            <input
+              type="url"
+              value={logoUrl}
+              onChange={e => setLogoUrl(e.target.value)}
+              placeholder="https://example.com/logo.png"
+              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
+            />
+          </div>
+
+          {/* Color Code Picker */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-emerald-400" /> QR Code & Accent Color Code
+            </label>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {BRAND_COLORS.map(c => (
+                <button
+                  type="button"
+                  key={c.hex}
+                  onClick={() => setAccentColor(c.hex)}
+                  className={`p-2 rounded-xl border flex flex-col items-center gap-1 transition-all ${
+                    accentColor === c.hex
+                      ? 'border-white bg-slate-800 shadow-md ring-2 ring-emerald-500/50'
+                      : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="w-5 h-5 rounded-full border border-white/20" style={{ backgroundColor: c.hex }}></div>
+                  <span className="text-[10px] text-slate-300 font-medium truncate w-full text-center">{c.name.split(' ')[0]}</span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-semibold">Custom Hex Code:</span>
+              <input
+                type="text"
+                value={accentColor}
+                onChange={e => setAccentColor(e.target.value)}
+                className="w-28 px-3 py-1.5 rounded-lg glass-input text-white text-xs font-mono"
               />
             </div>
           </div>
@@ -242,7 +303,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
               disabled={saving}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
             >
-              <Save className="w-4 h-4" /> Save Wi-Fi Credentials
+              <Save className="w-4 h-4" /> Save Wi-Fi & Styling
             </button>
           </div>
         </form>

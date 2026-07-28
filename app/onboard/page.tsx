@@ -3,9 +3,17 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Navbar } from '@/components/Navbar';
-import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
-import { generateWifiQrString } from '@/lib/wifi';
+
+const BRAND_COLORS = [
+  { name: 'Emerald Green', hex: '#16a34a' },
+  { name: 'Sapphire Blue', hex: '#2563eb' },
+  { name: 'Amber Gold', hex: '#d97706' },
+  { name: 'Crimson Red', hex: '#dc2626' },
+  { name: 'Violet Purple', hex: '#7c3aed' },
+  { name: 'Midnight Slate', hex: '#0f172a' },
+];
 
 export default function OnboardPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
@@ -13,6 +21,8 @@ export default function OnboardPage() {
   // Form State
   const [venueName, setVenueName] = useState('');
   const [tagline, setTagline] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [accentColor, setAccentColor] = useState('#16a34a');
   const [ssid, setSsid] = useState('');
   const [password, setPassword] = useState('');
   const [encryption, setEncryption] = useState<'WPA2' | 'WPA' | 'WEP' | 'nopass'>('WPA2');
@@ -41,7 +51,8 @@ export default function OnboardPage() {
       slug,
       tagline: tagline.trim() || 'Free Guest Wi-Fi & Local Recommendations',
       welcomeMessage: `Connect to High-Speed Wi-Fi at ${venueName.trim()}`,
-      accentColor: '#16a34a',
+      accentColor: accentColor || '#16a34a',
+      logoUrl: logoUrl.trim() || undefined,
       wifi: {
         ssid: ssid.trim(),
         password: password.trim(),
@@ -78,15 +89,22 @@ export default function OnboardPage() {
       });
       saveVenueSettings(newVenueSettings);
 
-      // Generate QR Code data URL for the success display screen
+      // Generate QR Code data URL using the custom accent color!
       const portalUrl = typeof window !== 'undefined'
         ? `${window.location.origin}/v/${slug}`
         : `https://explore-local-wifi-qr.vercel.app/v/${slug}`;
 
-      const dataUrl = await QRCode.toDataURL(portalUrl, { width: 400, margin: 1 });
+      const dataUrl = await QRCode.toDataURL(portalUrl, {
+        width: 400,
+        margin: 1,
+        color: {
+          dark: accentColor || '#0f172a',
+          light: '#ffffff'
+        }
+      });
       setQrDataUrl(dataUrl);
       setCreatedVenue(newVenueSettings);
-      setStep(4); // Render Success Celebration Screen!
+      setStep(4);
     } catch (err: any) {
       setError('Failed to create venue portal. Please try again.');
     } finally {
@@ -122,13 +140,13 @@ export default function OnboardPage() {
               Create Your QR Wi-Fi Lead Capture Portal
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm">
-              Generate your branded portal & printable tabletop QR stand instantly.
+              Generate your custom branded portal & styled tabletop QR stand instantly.
             </p>
 
             {/* Stepper Dots */}
             <div className="flex items-center justify-center gap-2 sm:gap-3 pt-3">
               <div className={`text-xs font-bold px-3 py-1 rounded-full ${step === 1 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
-                1. Venue Details
+                1. Branding & Logo
               </div>
               <div className={`text-xs font-bold px-3 py-1 rounded-full ${step === 2 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
                 2. Wi-Fi Config
@@ -146,7 +164,7 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {/* STEP 1: VENUE DETAILS */}
+        {/* STEP 1: VENUE BRANDING, LOGO & QR COLOR */}
         {step === 1 && (
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-5">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
@@ -154,8 +172,8 @@ export default function OnboardPage() {
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Business / Venue Information</h3>
-                <p className="text-xs text-slate-400">Tell guests where they are connecting.</p>
+                <h3 className="text-lg font-bold text-white">Business Branding & Styling</h3>
+                <p className="text-xs text-slate-400">Set up your logo and custom QR code color.</p>
               </div>
             </div>
 
@@ -175,7 +193,7 @@ export default function OnboardPage() {
 
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Tagline or Special Offer
+                Tagline or Subtitle
               </label>
               <input
                 type="text"
@@ -184,6 +202,61 @@ export default function OnboardPage() {
                 placeholder="e.g. Artisanal Roasts & Fresh Bakery"
                 className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm placeholder-slate-500 focus:outline-none"
               />
+            </div>
+
+            {/* Logo Image URL Input */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-emerald-400" /> Venue Logo Image URL (Optional)
+              </label>
+              <input
+                type="url"
+                value={logoUrl}
+                onChange={e => setLogoUrl(e.target.value)}
+                placeholder="https://example.com/logo.png"
+                className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm font-mono placeholder-slate-500 focus:outline-none"
+              />
+              {logoUrl && (
+                <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
+                  <span>Logo Preview:</span>
+                  <img src={logoUrl} alt="Logo Preview" className="w-7 h-7 rounded-lg object-cover border border-slate-700" onError={() => setError('Invalid image URL')} />
+                </div>
+              )}
+            </div>
+
+            {/* QR Code & Accent Color Picker */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-emerald-400" /> QR Code & Accent Brand Color
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                {BRAND_COLORS.map(c => (
+                  <button
+                    type="button"
+                    key={c.hex}
+                    onClick={() => setAccentColor(c.hex)}
+                    className={`p-2 rounded-xl border flex flex-col items-center gap-1 transition-all ${
+                      accentColor === c.hex
+                        ? 'border-white bg-slate-800 shadow-md ring-2 ring-emerald-500/50'
+                        : 'border-slate-800 bg-slate-900/60 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="w-6 h-6 rounded-full border border-white/20" style={{ backgroundColor: c.hex }}></div>
+                    <span className="text-[10px] text-slate-300 font-medium truncate w-full text-center">{c.name.split(' ')[0]}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Hex Code */}
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs text-slate-400 font-semibold">Custom Hex Code:</span>
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={e => setAccentColor(e.target.value)}
+                  className="w-28 px-3 py-1.5 rounded-lg glass-input text-white text-xs font-mono"
+                />
+              </div>
             </div>
 
             <button
@@ -316,7 +389,7 @@ export default function OnboardPage() {
             </div>
 
             <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
-              ⚡ <strong>Instant Delivery:</strong> Your QR code & portal instructions will be sent automatically to this email address!
+              ⚡ <strong>Instant Delivery:</strong> Your styled QR code & portal instructions will be sent automatically to this email address!
             </div>
 
             <div className="flex gap-3 pt-2">
@@ -346,7 +419,7 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {/* STEP 4: REGISTRATION SUCCESS & QR STAND DISPLAY SCREEN */}
+        {/* STEP 4: REGISTRATION SUCCESS & STYLED QR STAND DISPLAY SCREEN */}
         {step === 4 && createdVenue && (
           <div className="space-y-6 animate-fade-in text-center">
             
@@ -359,7 +432,7 @@ export default function OnboardPage() {
                 🎉 Congratulations! Your Portal is Live!
               </h2>
               <p className="text-slate-300 text-xs sm:text-sm max-w-md mx-auto">
-                We have emailed your portal links and instructions to <strong className="text-emerald-400">{notifyEmail}</strong>. Below is your official printable tabletop stand!
+                We have emailed your portal links and styled QR code to <strong className="text-emerald-400">{notifyEmail}</strong>. Below is your official printable tabletop stand!
               </p>
             </div>
 
@@ -389,19 +462,25 @@ export default function OnboardPage() {
               </a>
             </div>
 
-            {/* Live Printable Acrylic Stand Layout */}
+            {/* Live Printable Acrylic Stand Layout with Custom Logo & Accent Color */}
             <div className="flex justify-center my-6 overflow-hidden px-2">
               <div
                 id="printable-stand"
                 className="w-full max-w-sm sm:max-w-md bg-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[520px] sm:min-h-[580px] relative overflow-hidden"
               >
-                {/* Decorative Header */}
-                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-4 shadow-md">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <Wifi className="w-6 h-6 text-emerald-400" />
-                    <span className="font-extrabold tracking-tight text-lg uppercase">{createdVenue.name}</span>
+                {/* Decorative Header with Logo */}
+                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-4 shadow-md flex items-center justify-center gap-3">
+                  {createdVenue.logoUrl ? (
+                    <img src={createdVenue.logoUrl} alt={createdVenue.name} className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <Wifi className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div className="text-left">
+                    <span className="font-extrabold tracking-tight text-lg uppercase block">{createdVenue.name}</span>
+                    <p className="text-xs text-emerald-400 font-semibold">{createdVenue.tagline || 'Guest Wi-Fi Access'}</p>
                   </div>
-                  <p className="text-xs text-emerald-400 font-semibold">{createdVenue.tagline || 'Guest Wi-Fi Access'}</p>
                 </div>
 
                 <div className="space-y-1">
@@ -413,7 +492,7 @@ export default function OnboardPage() {
                   </p>
                 </div>
 
-                {/* QR Code */}
+                {/* QR Code in Custom Color */}
                 <div className="my-5 p-4 bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-inner flex flex-col items-center">
                   {qrDataUrl ? (
                     <img src={qrDataUrl} alt="Tabletop QR Stand" className="w-52 h-52 rounded-lg" />
@@ -423,22 +502,22 @@ export default function OnboardPage() {
                     </div>
                   )}
                   <div className="mt-2 flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Point Camera to Scan
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: createdVenue.accentColor || '#16a34a' }} /> Point Camera to Scan
                   </div>
                 </div>
 
                 {/* Steps */}
                 <div className="w-full border-t border-slate-200 pt-3 grid grid-cols-3 gap-2 text-center text-[10px] font-semibold text-slate-600">
                   <div>
-                    <span className="block text-emerald-600 font-extrabold text-xs">1. SCAN</span>
+                    <span className="block font-extrabold text-xs" style={{ color: createdVenue.accentColor || '#16a34a' }}>1. SCAN</span>
                     <span>Open Camera</span>
                   </div>
                   <div>
-                    <span className="block text-emerald-600 font-extrabold text-xs">2. ENTER</span>
+                    <span className="block font-extrabold text-xs" style={{ color: createdVenue.accentColor || '#16a34a' }}>2. ENTER</span>
                     <span>Quick Info</span>
                   </div>
                   <div>
-                    <span className="block text-emerald-600 font-extrabold text-xs">3. CONNECT</span>
+                    <span className="block font-extrabold text-xs" style={{ color: createdVenue.accentColor || '#16a34a' }}>3. CONNECT</span>
                     <span>Get Wi-Fi</span>
                   </div>
                 </div>
