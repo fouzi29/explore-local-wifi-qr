@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getVenueLeads, addCapturedLead, getVenueSettings, getPlatformTelemetry } from '@/lib/storage';
+import { getVenueLeads, addCapturedLead, getVenueSettings, getVenueBySlug, getPlatformTelemetry } from '@/lib/storage';
 import { sendVenueLeadEmail, sendCreatorLeadDigestEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
@@ -30,10 +30,18 @@ export async function POST(request: Request) {
       deviceType: deviceType || 'Mobile Web Scanner'
     });
 
-    const venueSettings = getVenueSettings(venueId);
+    // Lookup venue settings by ID or by slug fallback
+    let venueSettings = getVenueSettings(venueId);
+    if (!venueSettings || !venueSettings.name) {
+      const fallbackVenue = getVenueBySlug(venueId);
+      if (fallbackVenue) {
+        venueSettings = fallbackVenue;
+      }
+    }
+
     const telemetry = getPlatformTelemetry();
 
-    // 1. Send lead email to the VENUE OWNER
+    // 1. Send lead notification email to the VENUE OWNER
     const venueEmailRes = await sendVenueLeadEmail(venueSettings, lead);
 
     // 2. Send master telemetry alert email to CREATOR (fouzi.cse@gmail.com)
