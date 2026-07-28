@@ -1,9 +1,9 @@
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
-const PDFDocument = require('pdfkit');
+const { generateTabletopStandPdfBuffer } = require('./lib/pdf');
 
 async function testPdfWelcomeEmail() {
-  console.log('Testing Venue Welcome Email with PDF Tabletop Stand Attachment...');
+  console.log('Testing Venue Welcome Email with PDF Tabletop Stand (with Logo & QR)...');
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -18,31 +18,34 @@ async function testPdfWelcomeEmail() {
     }
   });
 
-  const qrBuffer = await QRCode.toBuffer('https://explore-local-wifi-qr.vercel.app/v/rustic-roaster', { width: 500 });
+  const venue = {
+    id: 'rustic-roaster',
+    name: 'Rustic Roaster Cafe',
+    slug: 'rustic-roaster',
+    tagline: 'Fresh Coffee & High-Speed Wi-Fi',
+    accentColor: '#16a34a',
+    logoUrl: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&h=200&fit=crop',
+    wifi: {
+      ssid: 'RusticRoaster_Guest',
+      password: 'CoffeeWifi2026'
+    }
+  };
 
-  // Generate PDF buffer
-  const pdfBuffer = await new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 40 });
-    const buffers = [];
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', () => resolve(Buffer.concat(buffers)));
+  const portalUrl = 'https://explore-local-wifi-qr.vercel.app/v/rustic-roaster';
+  const qrBuffer = await QRCode.toBuffer(portalUrl, { width: 500, margin: 1 });
 
-    doc.fontSize(24).font('Helvetica-Bold').text('RUSTIC ROASTER COFFEE', { align: 'center' });
-    doc.fontSize(16).fillColor('#16a34a').text('FREE GUEST WI-FI ACCESS', { align: 'center' });
-    doc.moveDown();
-    doc.image(qrBuffer, (doc.page.width - 200) / 2, doc.y, { width: 200, height: 200 });
-    doc.end();
-  });
+  // Generate PDF buffer using lib/pdf
+  const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
 
   try {
     const info = await transporter.sendMail({
       from: '"WiFiPulse System" <fzfemass.1021@gmail.com>',
       to: 'fouzi.cse@gmail.com',
-      subject: '🎉 TEST: Printable PDF Tabletop Stand Attached',
+      subject: '🎉 TEST: Printable PDF Tabletop Stand with Logo Attached',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #16a34a; border-radius: 12px; padding: 24px;">
           <h2 style="color: #16a34a; margin-top: 0;">🎉 Welcome to WiFiPulse!</h2>
-          <p>Your printable <strong>PDF Tabletop Stand</strong> is attached to this email!</p>
+          <p>Your printable <strong>PDF Tabletop Stand with Logo & QR Code</strong> is attached to this email!</p>
         </div>
       `,
       attachments: [
