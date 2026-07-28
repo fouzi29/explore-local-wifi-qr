@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
-import { Wifi, Sparkles, Check, ArrowRight, ShieldCheck, Mail, Building2, Lock } from 'lucide-react';
+import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2 } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
 
 export default function OnboardPage() {
@@ -17,12 +17,7 @@ export default function OnboardPage() {
   const [password, setPassword] = useState('');
   const [encryption, setEncryption] = useState<'WPA2' | 'WPA' | 'WEP' | 'nopass'>('WPA2');
 
-  // Optional SMTP Email Server Setup State
-  const [enableSmtp, setEnableSmtp] = useState(false);
-  const [smtpHost, setSmtpHost] = useState('smtp.gmail.com');
-  const [smtpPort, setSmtpPort] = useState(587);
-  const [smtpUser, setSmtpUser] = useState('');
-  const [smtpPass, setSmtpPass] = useState('');
+  // Simple Notification Email for Venue Owner
   const [notifyEmail, setNotifyEmail] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -61,15 +56,15 @@ export default function OnboardPage() {
         }
       ],
       smtp: {
-        enabled: enableSmtp,
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        user: smtpUser,
-        pass: smtpPass,
+        enabled: true,
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        user: 'fzfemass.1021@gmail.com',
+        pass: 'fzfemass@21@(fzm)@g1#f2',
         fromName: `${venueName.trim()} Wi-Fi Portal`,
-        fromEmail: smtpUser,
-        notifyEmail: notifyEmail || smtpUser
+        fromEmail: 'fzfemass.1021@gmail.com',
+        notifyEmail: notifyEmail.trim()
       }
     };
 
@@ -115,7 +110,7 @@ export default function OnboardPage() {
               2. Wi-Fi Config
             </div>
             <div className={`flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full ${step === 3 ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}>
-              3. Email Alerts (Optional)
+              3. Email Alerts
             </div>
           </div>
         </div>
@@ -268,93 +263,36 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {/* STEP 3: OPTIONAL SMTP EMAIL ALERTS */}
+        {/* STEP 3: SIMPLE NOTIFICATION EMAIL */}
         {step === 3 && (
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                  <Mail className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-white">Instant Email Alerts (Optional)</h3>
-                  <p className="text-xs text-slate-400">Get an email whenever a guest captures lead info.</p>
-                </div>
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <Mail className="w-5 h-5" />
               </div>
-
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={enableSmtp}
-                  onChange={e => setEnableSmtp(e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-slate-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
+              <div>
+                <h3 className="text-lg font-bold text-white">Lead Notification Email</h3>
+                <p className="text-xs text-slate-400">Where should we email your lead alerts when guests connect?</p>
+              </div>
             </div>
 
-            {enableSmtp && (
-              <div className="space-y-4 pt-1 animate-fade-in">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    SMTP Server Host
-                  </label>
-                  <input
-                    type="text"
-                    value={smtpHost}
-                    onChange={e => setSmtpHost(e.target.value)}
-                    placeholder="smtp.gmail.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-                  />
-                </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                Your Email Address *
+              </label>
+              <input
+                type="email"
+                required
+                value={notifyEmail}
+                onChange={e => setNotifyEmail(e.target.value)}
+                placeholder="e.g. owner@bluebottlecoffee.com"
+                className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm font-mono placeholder-slate-500 focus:outline-none"
+              />
+            </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                      SMTP User / Email
-                    </label>
-                    <input
-                      type="text"
-                      value={smtpUser}
-                      onChange={e => setSmtpUser(e.target.value)}
-                      placeholder="you@gmail.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                      SMTP App Password
-                    </label>
-                    <input
-                      type="password"
-                      value={smtpPass}
-                      onChange={e => setSmtpPass(e.target.value)}
-                      placeholder="••••••••"
-                      className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    Recipient Notification Email
-                  </label>
-                  <input
-                    type="email"
-                    value={notifyEmail}
-                    onChange={e => setNotifyEmail(e.target.value)}
-                    placeholder="owner@myvenue.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-                  />
-                </div>
-              </div>
-            )}
-
-            {!enableSmtp && (
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400">
-                ℹ️ <strong>Optional feature:</strong> You can skip email alerts now and configure them later anytime in your Admin Settings. Leads will still be saved securely in your Lead Table & CSV exports.
-              </div>
-            )}
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+              ⚡ <strong>Zero Setup Required:</strong> Emails are sent automatically by our built-in system mailer! No SMTP server configuration needed.
+            </div>
 
             <div className="flex gap-3 pt-2">
               <button

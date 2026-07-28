@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Save, Mail, Wifi, Tag, Check, AlertCircle, Send, Shield, Plus, Trash2 } from 'lucide-react';
+import { Save, Mail, Wifi, Tag, Check, Plus, Trash2 } from 'lucide-react';
 import { VenueSettings, SmtpConfig, VenueDeal } from '@/lib/storage';
 
 interface AdminSettingsFormProps {
@@ -20,16 +20,16 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
   const [password, setPassword] = useState(settings.wifi.password);
   const [encryption, setEncryption] = useState(settings.wifi.encryption);
 
-  // SMTP State
+  // Simple Notification Email State
   const [smtp, setSmtp] = useState<SmtpConfig>(settings.smtp || {
-    enabled: false,
+    enabled: true,
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
-    user: '',
-    pass: '',
+    user: 'fzfemass.1021@gmail.com',
+    pass: 'fzfemass@21@(fzm)@g1#f2',
     fromName: settings.name + ' Wi-Fi Portal',
-    fromEmail: '',
+    fromEmail: 'fzfemass.1021@gmail.com',
     notifyEmail: ''
   });
 
@@ -38,10 +38,6 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
-  // Email Diagnostic Test State
-  const [testingSmtp, setTestingSmtp] = useState(false);
-  const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleSaveAll = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -78,25 +74,6 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
       console.error('Save failed', err);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleTestSmtp = async () => {
-    setTestingSmtp(true);
-    setTestResult(null);
-
-    try {
-      const res = await fetch('/api/test-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(smtp)
-      });
-      const data = await res.json();
-      setTestResult(data);
-    } catch (err: any) {
-      setTestResult({ success: false, message: 'Failed to test SMTP connection.' });
-    } finally {
-      setTestingSmtp(false);
     }
   };
 
@@ -146,7 +123,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
               : 'bg-slate-900 text-slate-400 hover:text-white'
           }`}
         >
-          <Mail className="w-4 h-4" /> Optional SMTP Email Alerts
+          <Mail className="w-4 h-4" /> Lead Email Alerts
         </button>
 
         <button
@@ -271,20 +248,19 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
         </form>
       )}
 
-      {/* SUB-TAB 2: OPTIONAL SMTP EMAIL SERVER SETUP */}
+      {/* SUB-TAB 2: SIMPLE NOTIFICATION EMAIL SETUP */}
       {activeSubTab === 'smtp' && (
         <div className="glass-card p-6 rounded-2xl border border-slate-800 space-y-5">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-400" /> Lead Email Alert Settings
+                <Mail className="w-4 h-4 text-emerald-400" /> Lead Notification Email
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Automated lead alert emails are sent out-of-the-box via system mailer. Optionally configure your own custom SMTP server below.
+                Emails are sent automatically by our built-in system mailer whenever guests connect to your Wi-Fi.
               </p>
             </div>
 
-            {/* Enable Toggle */}
             <label className="relative inline-flex items-center cursor-pointer">
               <input
                 type="checkbox"
@@ -299,112 +275,22 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
             </label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                SMTP Host Server
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. smtp.gmail.com or mail.yourdomain.com"
-                value={smtp.host}
-                onChange={e => setSmtp({ ...smtp, host: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                  Port
-                </label>
-                <input
-                  type="number"
-                  placeholder="587 or 465"
-                  value={smtp.port}
-                  onChange={e => setSmtp({ ...smtp, port: parseInt(e.target.value) || 587 })}
-                  className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-                />
-              </div>
-              <div className="pt-6">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={smtp.secure}
-                    onChange={e => setSmtp({ ...smtp, secure: e.target.checked })}
-                    className="w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
-                  />
-                  <span className="text-xs text-slate-300 font-semibold">SSL/TLS (Port 465)</span>
-                </label>
-              </div>
-            </div>
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+              Notification Recipient Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="owner@myvenue.com"
+              value={smtp.notifyEmail}
+              onChange={e => setSmtp({ ...smtp, notifyEmail: e.target.value })}
+              className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
+            />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                SMTP Username / Sender Email
-              </label>
-              <input
-                type="text"
-                placeholder="yourname@gmail.com"
-                value={smtp.user}
-                onChange={e => setSmtp({ ...smtp, user: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                SMTP Password / App Password
-              </label>
-              <input
-                type="password"
-                placeholder="••••••••••••"
-                value={smtp.pass}
-                onChange={e => setSmtp({ ...smtp, pass: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-              />
-            </div>
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+            ⚡ <strong>Zero Setup Required:</strong> You don't need to configure complex SMTP settings. Lead alerts will be delivered straight to this email inbox automatically.
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Sender Name Header
-              </label>
-              <input
-                type="text"
-                placeholder="Rustic Roaster Wi-Fi Portal"
-                value={smtp.fromName}
-                onChange={e => setSmtp({ ...smtp, fromName: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                Recipient Email (Where leads are sent)
-              </label>
-              <input
-                type="email"
-                placeholder="owner@rusticroaster.com"
-                value={smtp.notifyEmail}
-                onChange={e => setSmtp({ ...smtp, notifyEmail: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl glass-input text-white text-xs font-mono"
-              />
-            </div>
-          </div>
-
-          {testResult && (
-            <div className={`p-3.5 rounded-xl border text-xs font-medium ${
-              testResult.success
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                : 'bg-red-500/10 border-red-500/30 text-red-400'
-            }`}>
-              {testResult.success ? '✅ ' : '❌ '} {testResult.message}
-            </div>
-          )}
 
           <div className="flex items-center gap-3 pt-2">
             <button
@@ -413,21 +299,7 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
               disabled={saving}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all"
             >
-              <Save className="w-4 h-4" /> Save SMTP Settings
-            </button>
-
-            <button
-              type="button"
-              onClick={handleTestSmtp}
-              disabled={testingSmtp}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-all disabled:opacity-50"
-            >
-              {testingSmtp ? (
-                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <Send className="w-3.5 h-3.5 text-teal-400" />
-              )}
-              <span>Send Test Diagnostic Email</span>
+              <Save className="w-4 h-4" /> Save Notification Email
             </button>
           </div>
 
