@@ -91,7 +91,7 @@ export async function sendVenueLeadEmail(
           </div>
 
           <div style="font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
-            Sent automatically by Explore Local QR Wi-Fi SaaS (${SYSTEM_OUTGOING_EMAIL})
+            Sent automatically by WiFiPulse (${SYSTEM_OUTGOING_EMAIL})
           </div>
         </div>
       `
