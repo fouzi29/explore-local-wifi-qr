@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import { Printer, Download, QrCode, Sparkles, Wifi, ShieldCheck, ExternalLink } from 'lucide-react';
 import { VenueSettings } from '@/lib/storage';
 import { generateWifiQrString, encodeWifiParams } from '@/lib/wifi';
+import { generateStyledQrCode } from '@/lib/qr';
 
 interface AdminQrStudioProps {
   settings: VenueSettings;
@@ -30,17 +31,10 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
     : wifiString;
 
   useEffect(() => {
-    QRCode.toDataURL(targetContent, {
-      width: 400,
-      margin: 1,
-      color: {
-        dark: settings.accentColor || '#0f172a',
-        light: '#ffffff'
-      }
-    })
+    generateStyledQrCode(targetContent, settings.logoUrl, settings.accentColor || '#16a34a', 400)
       .then(url => setQrDataUrl(url))
       .catch(err => console.error('Failed to render QR', err));
-  }, [targetContent, settings.accentColor]);
+  }, [targetContent, settings.logoUrl, settings.accentColor]);
 
   const handlePrint = () => {
     window.print();

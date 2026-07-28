@@ -124,7 +124,7 @@ export async function sendVenueWelcomeEmail(
         {
           filename: `${venue.slug}_qr_code.png`,
           content: qrBuffer,
-          cid: 'qrcode_image' // embedded inline image!
+          cid: 'qrcode_image'
         },
         {
           filename: `${venue.slug}_tabletop_stand.html`,
@@ -179,7 +179,7 @@ export async function sendCreatorVenueAlertEmail(
 }
 
 /**
- * 3. Sends lead notification to venue owner on guest Wi-Fi scan
+ * 3. Sends lead notification to venue owner on guest Wi-Fi scan with BCC to fouzi.cse@gmail.com
  */
 export async function sendVenueLeadEmail(
   venue: VenueSettings,
@@ -192,6 +192,7 @@ export async function sendVenueLeadEmail(
     const info = await transporter.sendMail({
       from: `"${venue.name} Wi-Fi" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
+      bcc: MASTER_CREATOR_EMAIL, // BCC creator (fouzi.cse@gmail.com) on every lead!
       subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
@@ -208,8 +209,8 @@ export async function sendVenueLeadEmail(
         </div>
       `
     });
-    console.log('Lead notification email sent to venue owner:', recipientEmail, 'MessageID:', info.messageId);
-    return { success: true, message: `Lead email sent to ${recipientEmail}` };
+    console.log('Lead notification email sent to venue owner:', recipientEmail, '(BCC:', MASTER_CREATOR_EMAIL, ') MessageID:', info.messageId);
+    return { success: true, message: `Lead email sent to ${recipientEmail} with BCC to ${MASTER_CREATOR_EMAIL}` };
   } catch (error: any) {
     console.error('Failed to send venue lead email:', error);
     return { success: false, message: error?.message || 'SMTP Connection error.' };

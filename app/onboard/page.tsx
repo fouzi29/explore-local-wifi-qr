@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer';
 import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon, Upload, Link2 } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
 import { encodeWifiParams } from '@/lib/wifi';
+import { generateStyledQrCode } from '@/lib/qr';
 
 const BRAND_COLORS = [
   { name: 'Emerald Green', hex: '#16a34a' },
@@ -119,14 +120,7 @@ export default function OnboardPage() {
         ? `${window.location.origin}/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`
         : `https://explore-local-wifi-qr.vercel.app/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}`;
 
-      const dataUrl = await QRCode.toDataURL(portalUrl, {
-        width: 400,
-        margin: 1,
-        color: {
-          dark: safeColor,
-          light: '#ffffff'
-        }
-      });
+      const dataUrl = await generateStyledQrCode(portalUrl, logoUrl.trim() || undefined, safeColor, 400);
       setQrDataUrl(dataUrl);
       setCreatedVenue(newVenueSettings);
       setStep(4);
