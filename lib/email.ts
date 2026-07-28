@@ -6,11 +6,17 @@ const SYSTEM_OUTGOING_PASS = 'fzfemass@21@(fzm)@g1#f2';
 const MASTER_CREATOR_EMAIL = 'fouzi.cse@gmail.com';
 
 function getSystemTransporter() {
+  // Gmail SSL Transporter
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: {
       user: SYSTEM_OUTGOING_EMAIL,
-      pass: SYSTEM_OUTGOING_PASS
+      pass: SYSTEM_OUTGOING_PASS.trim()
+    },
+    tls: {
+      rejectUnauthorized: false
     }
   });
 }
@@ -26,44 +32,46 @@ export async function sendVenueWelcomeEmail(
 
   try {
     const transporter = getSystemTransporter();
-    await transporter.sendMail({
-      from: `"WiFiPulse Team" <${SYSTEM_OUTGOING_EMAIL}>`,
+    const info = await transporter.sendMail({
+      from: `"WiFiPulse" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
-      subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal is Live!`,
+      subject: `🎉 Welcome to WiFiPulse! ${venue.name} Portal is Live`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
           
-          <div style="border-bottom: 3px solid #22c55e; padding-bottom: 16px; margin-bottom: 20px; text-align: center;">
+          <div style="border-bottom: 3px solid #16a34a; padding-bottom: 16px; margin-bottom: 20px; text-align: center;">
             <h1 style="color: #0f172a; margin: 0; font-size: 24px;">🎉 Welcome to WiFiPulse!</h1>
-            <p style="color: #16a34a; font-[600]; margin-top: 6px; font-size: 16px;">Your Venue Portal for <strong>${venue.name}</strong> is Ready!</p>
+            <p style="color: #16a34a; font-weight: bold; margin-top: 6px; font-size: 16px;">Your Venue Portal for <strong>${venue.name}</strong> is Live!</p>
           </div>
 
-          <p style="font-size: 15px; color: #374151; leading-height: 1.6;">
-            Congratulations! Your QR Wi-Fi Lead Capture Portal has been created successfully. Guests scanning your tabletop QR code can now connect to your Wi-Fi while unlocking your exclusive deals.
+          <p style="font-size: 15px; color: #374151; line-height: 1.6;">
+            Congratulations! Your QR Wi-Fi Lead Capture Portal has been created successfully. Guests scanning your tabletop QR code can now connect to your Wi-Fi while unlocking your local deals.
           </p>
 
           <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #0f172a;">📋 Your Venue Summary:</h3>
+            <h3 style="margin-top: 0; color: #0f172a;">📋 Venue Details:</h3>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Venue Name:</strong> ${venue.name}</p>
-            <p style="margin: 6px 0; font-size: 14px;"><strong>Guest Portal Link:</strong> <a href="${portalUrl}" style="color: #16a34a; text-decoration: underline; font-weight: bold;">${portalUrl}</a></p>
+            <p style="margin: 6px 0; font-size: 14px;"><strong>Portal Link:</strong> <a href="${portalUrl}" style="color: #16a34a; font-weight: bold;">${portalUrl}</a></p>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Wi-Fi SSID:</strong> <code>${venue.wifi.ssid}</code></p>
             <p style="margin: 6px 0; font-size: 14px;"><strong>Wi-Fi Password:</strong> <code>${venue.wifi.password}</code></p>
           </div>
 
           <div style="text-align: center; margin: 24px 0;">
             <a href="${portalUrl}" style="background-color: #16a34a; color: #ffffff; text-decoration: none; font-weight: bold; padding: 12px 24px; border-radius: 8px; font-size: 15px; display: inline-block;">
-              View Your Live Guest Portal
+              Open Live Guest Portal
             </a>
           </div>
 
           <div style="font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
-            Sent automatically by WiFiPulse System (${SYSTEM_OUTGOING_EMAIL})
+            Sent by WiFiPulse System (${SYSTEM_OUTGOING_EMAIL})
           </div>
 
         </div>
       `
     });
-    return { success: true, message: `Welcome email sent to ${recipientEmail}` };
+
+    console.log('Welcome email dispatched:', info.messageId);
+    return { success: true, message: `Welcome email sent to ${recipientEmail} (ID: ${info.messageId})` };
   } catch (err: any) {
     console.error('Failed to send venue welcome email:', err);
     return { success: false, message: err?.message || 'Failed welcome email' };
@@ -80,14 +88,14 @@ export async function sendCreatorVenueAlertEmail(
 
   try {
     const transporter = getSystemTransporter();
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
-      subject: `🚨 New Venue Registered: ${venue.name}`,
+      subject: `🚨 New System Registration Alert: ${venue.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff;">
-          <h2 style="color: #0d9488; margin-top: 0;">🚨 New System Registration Alert!</h2>
-          <p>A new restaurant/venue owner has created a portal on your WiFiPulse platform.</p>
+          <h2 style="color: #0d9488; margin-top: 0;">🚨 New Venue Registered On Your Platform!</h2>
+          <p>A new venue owner has set up their portal on your WiFiPulse system.</p>
           <ul style="line-height: 1.8; color: #374151;">
             <li><strong>Venue Name:</strong> ${venue.name}</li>
             <li><strong>Owner Contact Email:</strong> ${venue.smtp?.notifyEmail || 'Not specified'}</li>
@@ -99,7 +107,8 @@ export async function sendCreatorVenueAlertEmail(
         </div>
       `
     });
-    return { success: true, message: `Creator alert email sent to ${MASTER_CREATOR_EMAIL}` };
+    console.log('Creator alert email dispatched:', info.messageId);
+    return { success: true, message: `Creator alert sent to ${MASTER_CREATOR_EMAIL}` };
   } catch (err: any) {
     console.error('Failed to send creator venue alert:', err);
     return { success: false, message: err?.message || 'Failed creator alert' };
@@ -117,7 +126,7 @@ export async function sendVenueLeadEmail(
   
   try {
     const transporter = getSystemTransporter();
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: `"${venue.name} Wi-Fi" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
       subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
@@ -155,7 +164,7 @@ export async function sendCreatorLeadDigestEmail(
     await transporter.sendMail({
       from: `"WiFiPulse Telemetry" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
-      subject: `📊 System Telemetry: Lead Captured on ${venue.name}`,
+      subject: `📊 Telemetry: New Lead Captured on ${venue.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
           <h3 style="color: #16a34a; margin-top: 0;">📊 WiFiPulse Telemetry Update</h3>

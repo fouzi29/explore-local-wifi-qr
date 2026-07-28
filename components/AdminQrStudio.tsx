@@ -161,15 +161,19 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
           className="w-full max-w-sm sm:max-w-md bg-white text-slate-900 rounded-3xl p-5 sm:p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[520px] sm:min-h-[580px] relative overflow-hidden"
         >
                 {/* Decorative Top Arch */}
-                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-6 shadow-md flex items-center justify-center gap-3">
+                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-6 shadow-md flex flex-col items-center justify-center gap-2">
                   {settings.logoUrl ? (
-                    <img src={settings.logoUrl} alt={settings.name} className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+                    <img
+                      src={settings.logoUrl}
+                      alt={settings.name}
+                      className="max-h-16 max-w-[220px] object-contain mb-1"
+                    />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                      <Wifi className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-1">
+                      <Wifi className="w-7 h-7" />
                     </div>
                   )}
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="font-extrabold tracking-tight text-lg uppercase block">{settings.name}</span>
                     <p className="text-xs text-emerald-400 font-semibold">{settings.tagline || 'Guest Wi-Fi Access'}</p>
                   </div>

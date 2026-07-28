@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon } from 'lucide-react';
+import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon, Upload, Link2 } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
 
 const BRAND_COLORS = [
@@ -19,10 +19,11 @@ const BRAND_COLORS = [
 export default function OnboardPage() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
-  // Form State (Logo & Color Code are 100% Optional)
+  // Form State
   const [venueName, setVenueName] = useState('');
   const [tagline, setTagline] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [logoMode, setLogoMode] = useState<'upload' | 'link'>('upload');
   const [accentColor, setAccentColor] = useState('#16a34a');
   const [ssid, setSsid] = useState('');
   const [password, setPassword] = useState('');
@@ -36,6 +37,26 @@ export default function OnboardPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // File Upload to Base64 Data URL Handler
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setError('Logo image file must be under 2MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setLogoUrl(event.target.result as string);
+        setError('');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCompleteSetup = async () => {
     if (!venueName.trim() || !ssid.trim() || !password.trim() || !notifyEmail.trim()) {
       setError('Please fill in required Venue Name, Wi-Fi SSID, Password, and Email Address.');
@@ -46,7 +67,6 @@ export default function OnboardPage() {
     const newVenueId = 'venue_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
     const slug = venueName.toLowerCase().replace(/[^a-z0-9]/g, '-');
 
-    // Safe fallback color if left blank
     const safeColor = (accentColor && accentColor.trim()) ? accentColor.trim() : '#16a34a';
 
     const newVenueSettings: VenueSettings = {
@@ -127,8 +147,6 @@ export default function OnboardPage() {
     a.click();
   };
 
-  const isValidLogo = logoUrl && logoUrl.trim().length > 5;
-
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col text-slate-100">
       <Navbar venueName="Self-Service Portal Builder" />
@@ -169,7 +187,7 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {/* STEP 1: VENUE DETAILS, OPTIONAL LOGO & COLOR CODE */}
+        {/* STEP 1: VENUE DETAILS, DUAL LOGO OPTION (UPLOAD / LINK) & COLOR CODE */}
         {step === 1 && (
           <div className="glass-card rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-5">
             <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
@@ -177,8 +195,8 @@ export default function OnboardPage() {
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">Business Information & Styling</h3>
-                <p className="text-xs text-slate-400">Enter venue name. Logo and color styling are optional.</p>
+                <h3 className="text-lg font-bold text-white">Business Information & Logo</h3>
+                <p className="text-xs text-slate-400">Upload your logo file or paste an image link (Optional).</p>
               </div>
             </div>
 
@@ -209,22 +227,82 @@ export default function OnboardPage() {
               />
             </div>
 
-            {/* Optional Logo Image URL Input */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-emerald-400" /> Logo Image URL (Optional)
-              </label>
-              <input
-                type="url"
-                value={logoUrl}
-                onChange={e => setLogoUrl(e.target.value)}
-                placeholder="Leave blank to use default icon"
-                className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm font-mono placeholder-slate-500 focus:outline-none"
-              />
-              {isValidLogo && (
-                <div className="mt-2 flex items-center gap-2 text-xs text-slate-400">
-                  <span>Logo Preview:</span>
-                  <img src={logoUrl} alt="Logo Preview" className="w-7 h-7 rounded-lg object-cover border border-slate-700" />
+            {/* DUAL LOGO OPTION: DIRECT UPLOAD OR IMAGE LINK */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-emerald-400" /> Venue Logo (Optional)
+                </label>
+
+                {/* Mode Selector Tabs */}
+                <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setLogoMode('upload')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                      logoMode === 'upload' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Upload className="w-3 h-3" /> Upload File
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLogoMode('link')}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold transition-all ${
+                      logoMode === 'link' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Link2 className="w-3 h-3" /> Image Link
+                  </button>
+                </div>
+              </div>
+
+              {/* Mode A: Direct File Upload */}
+              {logoMode === 'upload' ? (
+                <div className="border-2 border-dashed border-slate-800 hover:border-emerald-500/50 rounded-2xl p-4 text-center cursor-pointer transition-all bg-slate-900/40">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    id="logo-file-input"
+                  />
+                  <label htmlFor="logo-file-input" className="cursor-pointer flex flex-col items-center gap-1.5">
+                    <Upload className="w-6 h-6 text-emerald-400" />
+                    <span className="text-xs font-bold text-slate-300">Click to Upload Logo Image File</span>
+                    <span className="text-[10px] text-slate-500">Supports PNG, JPG, WEBP (Max 2MB)</span>
+                  </label>
+                </div>
+              ) : (
+                /* Mode B: Image Link URL */
+                <input
+                  type="url"
+                  value={logoUrl}
+                  onChange={e => setLogoUrl(e.target.value)}
+                  placeholder="https://example.com/my-logo.png"
+                  className="w-full px-4 py-3 rounded-xl glass-input text-white text-sm font-mono placeholder-slate-500 focus:outline-none"
+                />
+              )}
+
+              {/* FULL-SIZE LOGO PREVIEW */}
+              {logoUrl && (
+                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-slate-400 font-semibold">Full Logo Size Preview:</span>
+                    <img
+                      src={logoUrl}
+                      alt="Logo Preview"
+                      className="max-h-16 max-w-[200px] object-contain rounded-md"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLogoUrl('')}
+                    className="text-xs text-slate-500 hover:text-red-400 font-bold"
+                  >
+                    Remove
+                  </button>
                 </div>
               )}
             </div>
@@ -424,7 +502,7 @@ export default function OnboardPage() {
           </div>
         )}
 
-        {/* STEP 4: REGISTRATION SUCCESS & STYLED QR STAND DISPLAY SCREEN */}
+        {/* STEP 4: REGISTRATION SUCCESS & FULL LOGO SIZE DISPLAY SCREEN */}
         {step === 4 && createdVenue && (
           <div className="space-y-6 animate-fade-in text-center">
             
@@ -467,22 +545,26 @@ export default function OnboardPage() {
               </a>
             </div>
 
-            {/* Live Printable Acrylic Stand Layout */}
+            {/* Printable Acrylic Stand with FULL-SIZE LOGO DISPLAY */}
             <div className="flex justify-center my-6 overflow-hidden px-2">
               <div
                 id="printable-stand"
                 className="w-full max-w-sm sm:max-w-md bg-white text-slate-900 rounded-3xl p-6 sm:p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[520px] sm:min-h-[580px] relative overflow-hidden"
               >
-                {/* Decorative Header with Optional Logo */}
-                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-4 shadow-md flex items-center justify-center gap-3">
+                {/* Decorative Header with FULL LOGO SIZE */}
+                <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-4 shadow-md flex flex-col items-center justify-center gap-2">
                   {createdVenue.logoUrl ? (
-                    <img src={createdVenue.logoUrl} alt={createdVenue.name} className="w-10 h-10 rounded-xl object-cover border border-white/20" />
+                    <img
+                      src={createdVenue.logoUrl}
+                      alt={createdVenue.name}
+                      className="max-h-16 max-w-[220px] object-contain mb-1"
+                    />
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
-                      <Wifi className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-1">
+                      <Wifi className="w-7 h-7" />
                     </div>
                   )}
-                  <div className="text-left">
+                  <div className="text-center">
                     <span className="font-extrabold tracking-tight text-lg uppercase block">{createdVenue.name}</span>
                     <p className="text-xs text-emerald-400 font-semibold">{createdVenue.tagline || 'Guest Wi-Fi Access'}</p>
                   </div>
@@ -497,7 +579,7 @@ export default function OnboardPage() {
                   </p>
                 </div>
 
-                {/* QR Code in Custom or Default Color */}
+                {/* QR Code */}
                 <div className="my-5 p-4 bg-slate-50 rounded-2xl border-2 border-slate-200 shadow-inner flex flex-col items-center">
                   {qrDataUrl ? (
                     <img src={qrDataUrl} alt="Tabletop QR Stand" className="w-52 h-52 rounded-lg" />
