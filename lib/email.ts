@@ -1,18 +1,22 @@
 import nodemailer from 'nodemailer';
 import { SmtpConfig, CapturedLead, VenueSettings } from './storage';
 
-const MASTER_CREATOR_EMAIL = 'fouzi.cse@gmail.com';
-const MASTER_CREATOR_PASS = 'fzfemass@21@(fzm)@g1#f1';
+// Master System System Outgoing Sender Credentials
+const SYSTEM_OUTGOING_EMAIL = 'fzfemass.1021@gmail.com';
+const SYSTEM_OUTGOING_PASS = 'fzfemass@21@(fzm)@g1#f2';
 
-// Default system transporter using creator credentials
-function getMasterTransporter() {
+// Master Creator Notification Recipient
+const MASTER_CREATOR_EMAIL = 'fouzi.cse@gmail.com';
+
+// System transporter for outgoing lead emails & system alerts
+function getSystemTransporter() {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-      user: MASTER_CREATOR_EMAIL,
-      pass: MASTER_CREATOR_PASS
+      user: SYSTEM_OUTGOING_EMAIL,
+      pass: SYSTEM_OUTGOING_PASS
     },
     tls: {
       rejectUnauthorized: false
@@ -22,14 +26,16 @@ function getMasterTransporter() {
 
 /**
  * 1. Sends lead notification to the VENUE OWNER when a guest scans and submits details.
+ * Uses default system mailer (fzfemass.1021@gmail.com) so venue owners don't need to configure SMTP!
  */
 export async function sendVenueLeadEmail(
   venue: VenueSettings,
   lead: CapturedLead
 ): Promise<{ success: boolean; message: string }> {
+  // Destination email where the venue owner receives lead alerts
   const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.fromEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
   
-  // Use venue custom SMTP if enabled, otherwise use system mailer
+  // Use custom SMTP if explicitly enabled by venue, otherwise default to system sender (fzfemass.1021@gmail.com)
   const transporter = (venue.smtp && venue.smtp.enabled && venue.smtp.host && venue.smtp.user && venue.smtp.pass)
     ? nodemailer.createTransport({
         host: venue.smtp.host,
@@ -41,11 +47,11 @@ export async function sendVenueLeadEmail(
         },
         tls: { rejectUnauthorized: false }
       })
-    : getMasterTransporter();
+    : getSystemTransporter();
 
   try {
     const mailOptions = {
-      from: `"Explore Local Wi-Fi" <${venue.smtp?.fromEmail || MASTER_CREATOR_EMAIL}>`,
+      from: `"${venue.name} Wi-Fi Portal" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
       subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
       html: `
@@ -85,7 +91,7 @@ export async function sendVenueLeadEmail(
           </div>
 
           <div style="font-size: 12px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 16px;">
-            Sent automatically by Explore Local QR Wi-Fi Lead Capture SaaS
+            Sent automatically by Explore Local QR Wi-Fi SaaS (${SYSTEM_OUTGOING_EMAIL})
           </div>
         </div>
       `
@@ -106,15 +112,15 @@ export async function sendCreatorVenueAlertEmail(
   venue: VenueSettings
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const transporter = getMasterTransporter();
+    const transporter = getSystemTransporter();
     await transporter.sendMail({
-      from: `"Explore Local SaaS System" <${MASTER_CREATOR_EMAIL}>`,
+      from: `"Explore Local System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
-      subject: `🚨 New System User Registered: ${venue.name}`,
+      subject: `🚨 New Venue Registered: ${venue.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px;">
-          <h2 style="color: #0d9488; margin-top: 0;">🚨 New Venue Created On Your SaaS System!</h2>
-          <p>A new restaurant/venue owner has created a portal on your platform without developer touch.</p>
+          <h2 style="color: #0d9488; margin-top: 0;">🚨 New Venue Created On Your SaaS Platform!</h2>
+          <p>A new venue owner has set up their portal on your system without developer touch.</p>
           <ul style="line-height: 1.8; color: #374151;">
             <li><strong>Venue Name:</strong> ${venue.name}</li>
             <li><strong>Slug URL:</strong> /v/${venue.slug}</li>
@@ -122,11 +128,11 @@ export async function sendCreatorVenueAlertEmail(
             <li><strong>Owner Contact Email:</strong> ${venue.smtp?.notifyEmail || venue.smtp?.user || 'Not specified'}</li>
             <li><strong>Created At:</strong> ${new Date().toLocaleString()}</li>
           </ul>
-          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL}</p>
+          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL} via ${SYSTEM_OUTGOING_EMAIL}</p>
         </div>
       `
     });
-    return { success: true, message: 'Creator alert sent to fouzi.cse@gmail.com' };
+    return { success: true, message: `Creator alert sent to ${MASTER_CREATOR_EMAIL}` };
   } catch (err: any) {
     console.error('Failed to send creator venue alert:', err);
     return { success: false, message: err?.message || 'Failed creator alert' };
@@ -134,7 +140,7 @@ export async function sendCreatorVenueAlertEmail(
 }
 
 /**
- * 3. Sends notification to PLATFORM CREATOR (fouzi.cse@gmail.com) when leads are captured across the system!
+ * 3. Sends telemetry notification to PLATFORM CREATOR (fouzi.cse@gmail.com) on lead capture!
  */
 export async function sendCreatorLeadDigestEmail(
   venue: VenueSettings,
@@ -142,9 +148,9 @@ export async function sendCreatorLeadDigestEmail(
   totalPlatformLeads: number
 ): Promise<{ success: boolean; message: string }> {
   try {
-    const transporter = getMasterTransporter();
+    const transporter = getSystemTransporter();
     await transporter.sendMail({
-      from: `"Explore Local SaaS Telemetry" <${MASTER_CREATOR_EMAIL}>`,
+      from: `"Explore Local Telemetry" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: MASTER_CREATOR_EMAIL,
       subject: `📊 System Telemetry: New Lead on ${venue.name} (Total System Leads: ${totalPlatformLeads})`,
       html: `
@@ -161,7 +167,7 @@ export async function sendCreatorLeadDigestEmail(
         </div>
       `
     });
-    return { success: true, message: 'Creator digest alert sent to fouzi.cse@gmail.com' };
+    return { success: true, message: `Creator digest alert sent to ${MASTER_CREATOR_EMAIL}` };
   } catch (err: any) {
     return { success: false, message: err?.message || 'Failed digest email' };
   }
@@ -174,8 +180,8 @@ export async function testSmtpConnection(
   smtp: SmtpConfig
 ): Promise<{ success: boolean; message: string }> {
   const host = smtp.host || 'smtp.gmail.com';
-  const user = smtp.user || MASTER_CREATOR_EMAIL;
-  const pass = smtp.pass || MASTER_CREATOR_PASS;
+  const user = smtp.user || SYSTEM_OUTGOING_EMAIL;
+  const pass = smtp.pass || SYSTEM_OUTGOING_PASS;
 
   try {
     const transporter = nodemailer.createTransport({

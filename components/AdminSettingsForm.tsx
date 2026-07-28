@@ -277,10 +277,10 @@ export const AdminSettingsForm: React.FC<AdminSettingsFormProps> = ({ settings, 
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
               <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-400" /> Outgoing / Incoming SMTP Email Server Setup
+                <Mail className="w-4 h-4 text-emerald-400" /> Lead Email Alert Settings
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Optionally configure your business email server to get automated instant email alerts whenever guests scan your QR code.
+                Automated lead alert emails are sent out-of-the-box via system mailer. Optionally configure your own custom SMTP server below.
               </p>
             </div>
 
