@@ -54,38 +54,21 @@ http://localhost:3000
 
 ---
 
-## 🐙 How to Push to GitHub
+## 🐙 GitHub Repository
 
-Run the following terminal commands to publish your repository to GitHub:
-
-```bash
-# 1. Initialize Git repository
-git init
-
-# 2. Add all files and make initial commit
-git add .
-git commit -m "Initial commit - Explore Local QR Wi-Fi Lead Capture SaaS"
-
-# 3. Create a new repository on GitHub (via GitHub website or GitHub CLI)
-# GitHub CLI command (if installed):
-gh repo create explore-local-qr-wifi --public --source=. --remote=origin --push
-
-# Or manual git remote command:
-git branch -M main
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/explore-local-qr-wifi.git
-git push -u origin main
-```
+Your project is now live on GitHub:
+**Repository**: [https://github.com/fouzi29/explore-local-wifi-qr](https://github.com/fouzi29/explore-local-wifi-qr)
 
 ---
 
 ## ⚡ How to Deploy Live on Vercel
 
-### Option A: Vercel Web Dashboard (1-Click Deployment)
-1. Push code to GitHub (as shown above).
-2. Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
-3. Select your GitHub repository `explore-local-qr-wifi`.
-4. Leave framework settings as **Next.js** (Zero configuration needed!).
-5. Click **"Deploy"**. Your live URL will be active in ~45 seconds (e.g. `https://explore-local-qr-wifi.vercel.app`).
+### 1-Click Deployment on Vercel:
+1. Open [vercel.com/new](https://vercel.com/new).
+2. Select your GitHub account `fouzi29`.
+3. Import the repository **`explore-local-wifi-qr`**.
+4. Framework Preset will automatically select **Next.js**.
+5. Click **"Deploy"**. Your live web app will be published on Vercel in ~30 seconds!
 
 ### Option B: Vercel CLI
 ```bash
