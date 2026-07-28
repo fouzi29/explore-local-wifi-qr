@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Explore Local - QR Wi-Fi Lead Capture & Local Guide",
-  description: "Connect to high-speed venue Wi-Fi and unlock exclusive local rewards, discounts, and neighborhood recommendations.",
-  keywords: ["QR Wi-Fi", "Wi-Fi Lead Capture", "Local Guide", "Venue Marketing", "Café Wi-Fi", "Guest Wi-Fi"],
+  title: "WiFiPulse - Turn Free Guest Wi-Fi Into Customer Leads",
+  description: "The #1 B2B QR Wi-Fi Lead Capture SaaS for restaurants, cafes, and local venues. Collect customer contact details & build your database on autopilot.",
+  keywords: ["WiFiPulse", "QR Wi-Fi", "Wi-Fi Lead Capture", "Restaurant Marketing", "Café Wi-Fi", "Guest Wi-Fi SaaS"],
 };
 
 export const viewport: Viewport = {

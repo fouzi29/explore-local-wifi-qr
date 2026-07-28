@@ -13,7 +13,7 @@ export default function SaaSMainHomePage() {
     <div className="min-h-screen bg-slate-950 flex flex-col text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
       
       {/* Top Navbar */}
-      <Navbar venueName="Explore Local Wi-Fi SaaS" />
+      <Navbar venueName="WiFiPulse SaaS" />
 
       {/* Main SaaS Sections */}
       <main className="flex-1">
@@ -107,7 +107,7 @@ export default function SaaSMainHomePage() {
       <footer className="border-t border-slate-900 py-8 bg-slate-950">
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            <span className="font-bold text-slate-300">Explore Local Wi-Fi SaaS</span> © 2026 • Created by fouzi.cse@gmail.com
+            <span className="font-bold text-slate-300">WiFiPulse SaaS</span> © 2026 • Created by fouzi.cse@gmail.com
           </div>
           <div className="flex items-center gap-4">
             <Link href="/onboard" className="hover:text-slate-300 transition-colors">Create Venue</Link>

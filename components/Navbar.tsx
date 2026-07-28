@@ -10,7 +10,7 @@ interface NavbarProps {
   activeTab?: string;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ venueName = 'Explore Local', venueId = 'venue_default' }) => {
+export const Navbar: React.FC<NavbarProps> = ({ venueName = 'WiFiPulse', venueId = 'venue_default' }) => {
   return (
     <header className="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-3 sm:px-6 py-3 backdrop-blur-md">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
