@@ -10,7 +10,10 @@ export function generateWifiQrString(config: WifiConfig): string {
   if (encryption === 'nopass' || !password) {
     return `WIFI:S:${escapeWifiField(ssid)};T:nopass;;`;
   }
-  return `WIFI:S:${escapeWifiField(ssid)};T:${encryption};P:${escapeWifiField(password)};${hidden ? 'H:true;' : ''};`;
+  // iOS & Android camera QR readers require T:WPA or T:WEP or T:nopass
+  const encType = (encryption === 'WPA2' || encryption === 'WPA') ? 'WPA' : encryption;
+  const hFlag = hidden ? 'H:true;' : '';
+  return `WIFI:S:${escapeWifiField(ssid)};T:${encType};P:${escapeWifiField(password)};${hFlag};`;
 }
 
 function escapeWifiField(str: string): string {

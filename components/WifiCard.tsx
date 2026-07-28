@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
-import { Wifi, Copy, Check, QrCode, Shield, Smartphone } from 'lucide-react';
+import { Wifi, Copy, Check, QrCode, Shield, Smartphone, Key } from 'lucide-react';
 import { VenueSettings } from '@/lib/storage';
 import { generateWifiQrString } from '@/lib/wifi';
 
@@ -18,18 +18,20 @@ export const WifiCard: React.FC<WifiCardProps> = ({ settings, guestName }) => {
   const wifiConfig = settings.wifi;
   const wifiQrString = generateWifiQrString(wifiConfig);
 
+  const accentColor = settings.accentColor || '#16a34a';
+
   useEffect(() => {
     QRCode.toDataURL(wifiQrString, {
-      width: 280,
+      width: 320,
       margin: 2,
       color: {
-        dark: '#0f172a',
+        dark: accentColor,
         light: '#ffffff'
       }
     })
       .then(url => setQrDataUrl(url))
       .catch(err => console.error('Failed to generate Wi-Fi QR code', err));
-  }, [wifiQrString]);
+  }, [wifiQrString, accentColor]);
 
   const copyPassword = () => {
     if (navigator.clipboard) {
@@ -40,10 +42,10 @@ export const WifiCard: React.FC<WifiCardProps> = ({ settings, guestName }) => {
   };
 
   return (
-    <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-emerald-500/40 shadow-2xl relative overflow-hidden">
+    <div className="glass-card rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-emerald-500/40 shadow-2xl relative overflow-hidden space-y-6">
       
       {/* Top Banner */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4 mb-4 sm:mb-6">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-3 sm:pb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
             <Wifi className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
@@ -54,70 +56,86 @@ export const WifiCard: React.FC<WifiCardProps> = ({ settings, guestName }) => {
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 bg-slate-900/60 px-3 py-1.5 rounded-full border border-slate-800">
-          <Shield className="w-3.5 h-3.5 text-emerald-400" /> WPA2 Secure
+          <Shield className="w-3.5 h-3.5 text-emerald-400" /> WPA2 Secure Network
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
         
-        {/* Credentials & Copy Action */}
-        <div className="space-y-3 sm:space-y-4">
+        {/* Left Column: Network & Credentials Card */}
+        <div className="space-y-3 sm:space-y-4 flex flex-col justify-between">
           
           {/* SSID */}
-          <div className="bg-slate-950/70 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-slate-800">
-            <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold tracking-wider">Network Name (SSID)</span>
-            <div className="text-base sm:text-lg font-bold text-white mt-0.5 flex items-center justify-between gap-2">
+          <div className="bg-slate-950/70 rounded-xl sm:rounded-2xl p-4 border border-slate-800">
+            <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold tracking-wider block">Network Name (SSID)</span>
+            <div className="text-base sm:text-lg font-bold text-white mt-1 flex items-center justify-between gap-2">
               <span className="truncate">{wifiConfig.ssid}</span>
-              <span className="text-[10px] font-normal text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0">Active</span>
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full shrink-0">Connected</span>
             </div>
           </div>
 
-          {/* Password */}
-          <div className="bg-slate-950/70 rounded-xl sm:rounded-2xl p-3.5 sm:p-4 border border-slate-800">
-            <span className="text-[10px] sm:text-xs text-slate-400 uppercase font-semibold tracking-wider">Wi-Fi Password</span>
-            <div className="flex items-center justify-between gap-2 mt-1">
-              <span className="text-base sm:text-xl font-mono font-bold text-emerald-400 tracking-wide break-all truncate">
+          {/* Actual Wi-Fi Password Box */}
+          <div className="bg-slate-950/70 rounded-xl sm:rounded-2xl p-4 border border-emerald-500/30 bg-emerald-950/10">
+            <span className="text-[10px] sm:text-xs text-emerald-400 uppercase font-bold tracking-wider flex items-center gap-1">
+              <Key className="w-3.5 h-3.5" /> Actual Wi-Fi Password
+            </span>
+            <div className="flex items-center justify-between gap-2 mt-1.5">
+              <span className="text-lg sm:text-2xl font-mono font-extrabold text-white tracking-wide break-all select-all">
                 {wifiConfig.password}
               </span>
               <button
                 onClick={copyPassword}
-                className="flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40 transition-all shrink-0"
+                className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40 transition-all shrink-0"
               >
                 {copied ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!
+                    <Check className="w-4 h-4 text-emerald-400" /> Copied!
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5" /> Copy
+                    <Copy className="w-4 h-4" /> Copy Password
                   </>
                 )}
               </button>
             </div>
           </div>
 
+          {/* Instant Camera Connect Hint */}
           <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] sm:text-xs text-slate-300 flex items-start gap-2">
             <Smartphone className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>
-              <strong>Instant Camera Connect:</strong> Scan the QR code with your phone camera to join automatically!
+              <strong>Auto-Connect:</strong> Scan the QR code with your mobile camera to join the network automatically!
             </div>
           </div>
 
         </div>
 
-        {/* QR Code Auto-Connect */}
-        <div className="flex flex-col items-center justify-center p-4 sm:p-5 rounded-2xl bg-white text-slate-900 shadow-xl border border-slate-200">
-          {qrDataUrl ? (
-            <img src={qrDataUrl} alt="Auto-connect Wi-Fi QR Code" className="w-40 h-40 sm:w-48 sm:h-48 rounded-lg" />
-          ) : (
-            <div className="w-40 h-40 sm:w-48 sm:h-48 bg-slate-100 flex items-center justify-center rounded-lg text-slate-400 text-xs">
-              Generating QR...
+        {/* Right Column: QR Code with Actual Password Display Underneath */}
+        <div className="flex flex-col items-center justify-between p-5 rounded-2xl bg-white text-slate-900 shadow-xl border border-slate-200 text-center">
+          
+          <div className="w-full flex flex-col items-center">
+            {qrDataUrl ? (
+              <img src={qrDataUrl} alt="Auto-connect Wi-Fi QR Code" className="w-44 h-44 sm:w-52 sm:h-52 rounded-xl border border-slate-200 shadow-sm" />
+            ) : (
+              <div className="w-44 h-44 sm:w-52 sm:h-52 bg-slate-100 flex items-center justify-center rounded-xl text-slate-400 text-xs">
+                Generating QR...
+              </div>
+            )}
+            
+            <div className="mt-3 flex items-center gap-1.5 text-xs font-extrabold text-slate-900">
+              <QrCode className="w-4 h-4 text-emerald-600" />
+              <span>Point Camera to Scan & Auto-Connect</span>
             </div>
-          )}
-          <div className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-slate-800">
-            <QrCode className="w-4 h-4 text-emerald-600" />
-            <span>Scan Camera to Connect</span>
           </div>
+
+          {/* Actual Password Text directly under the QR code */}
+          <div className="w-full mt-4 pt-3 border-t border-slate-200 bg-slate-50 p-2.5 rounded-xl text-center">
+            <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">Wi-Fi Password:</div>
+            <div className="text-sm sm:text-base font-mono font-extrabold text-slate-950 tracking-wider break-all mt-0.5 select-all">
+              {wifiConfig.password}
+            </div>
+          </div>
+
         </div>
 
       </div>
