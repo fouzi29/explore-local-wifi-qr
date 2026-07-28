@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({ compact = false }) => {
         {/* Developer / Indirect Hire Links (LinkedIn & Fiverr) */}
         <div className="flex flex-wrap items-center justify-center gap-3">
           <span className="text-slate-500 font-medium flex items-center gap-1">
-            <Briefcase className="w-3 h-3 text-teal-400" /> Available for Hire:
+            <Briefcase className="w-3 h-3 text-teal-400" /> Built by MD. Fouzi &bull; Available for Hire:
           </span>
 
           {/* LinkedIn Profile */}
