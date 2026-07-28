@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
-import { Lock, Sparkles, CheckCircle2, User, Mail, Phone, Tag } from 'lucide-react';
+import { Lock, Sparkles, CheckCircle2, User, Mail, Tag } from 'lucide-react';
 import { CapturedLead } from '@/lib/storage';
 
 interface LeadFormProps {
@@ -12,11 +12,11 @@ interface LeadFormProps {
 }
 
 const INTEREST_OPTIONS = [
-  '☕ Coffee & Drink Specials',
-  '🏷️ Exclusive Discounts',
-  '🎨 Local Art & Murals',
-  '🎶 Live Music & Events',
-  '🥐 Daily Chef Specials'
+  '☕ Coffee Specials',
+  '🏷️ Discounts',
+  '🎨 Local Art',
+  '🎶 Live Music',
+  '🥐 Chef Specials'
 ];
 
 export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSuccess }) => {
@@ -42,7 +42,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
       return;
     }
     if (!emailOrPhone.trim()) {
-      setError('Please enter your email or mobile phone number');
+      setError('Please enter your email or phone number');
       return;
     }
 
@@ -50,9 +50,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
     setLoading(true);
 
     try {
-      // Determine simple user agent device
       const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-      let deviceType = 'Mobile Browser';
+      let deviceType = 'Mobile Web Scanner';
       if (/iPhone|iPad|iPod/i.test(userAgent)) deviceType = 'Apple iOS';
       else if (/Android/i.test(userAgent)) deviceType = 'Android Smartphone';
       else if (/Macintosh|Windows|Linux/i.test(userAgent)) deviceType = 'Desktop / Laptop';
@@ -73,7 +72,6 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
       const data = await response.json();
 
       if (data.success && data.lead) {
-        // Trigger celebratory confetti burst
         confetti({
           particleCount: 80,
           spread: 70,
@@ -91,20 +89,20 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
   };
 
   return (
-    <div className="glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 shadow-2xl relative overflow-hidden">
+    <div className="glass-card rounded-2xl sm:rounded-3xl p-5 sm:p-8 border border-emerald-500/30 shadow-2xl relative overflow-hidden">
       
       {/* Top Gradient Bar */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
 
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-3">
+      <div className="text-center mb-5 sm:mb-6">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-2">
           <Sparkles className="w-3.5 h-3.5" /> Quick 10-Second Access
         </div>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-          Unlock Free High-Speed Wi-Fi
+        <h2 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+          Unlock Free Guest Wi-Fi
         </h2>
-        <p className="text-slate-400 text-sm mt-1">
-          Enter your details below to get instant Wi-Fi access & exclusive local rewards at <strong>{venueName}</strong>.
+        <p className="text-slate-400 text-xs sm:text-sm mt-1">
+          Instant Wi-Fi credentials & local perks at <strong>{venueName}</strong>.
         </p>
       </div>
 
@@ -118,8 +116,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
         
         {/* Guest Name */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Your Full Name
+          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Your Name
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -131,15 +129,15 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Alex Morgan"
-              className="w-full pl-10 pr-4 py-3 rounded-xl glass-input text-white text-sm placeholder-slate-500 focus:outline-none transition-all"
+              className="w-full pl-10 pr-4 py-3 rounded-xl glass-input text-white text-base sm:text-sm placeholder-slate-500 focus:outline-none transition-all"
             />
           </div>
         </div>
 
         {/* Email or Phone */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-            Email Address or Mobile Phone
+          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+            Email or Mobile Phone
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -150,18 +148,18 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
               required
               value={emailOrPhone}
               onChange={e => setEmailOrPhone(e.target.value)}
-              placeholder="alex@example.com or +1 (555) 000-0000"
-              className="w-full pl-10 pr-4 py-3 rounded-xl glass-input text-white text-sm placeholder-slate-500 focus:outline-none transition-all"
+              placeholder="alex@example.com or +1 555-0192"
+              className="w-full pl-10 pr-4 py-3 rounded-xl glass-input text-white text-base sm:text-sm placeholder-slate-500 focus:outline-none transition-all"
             />
           </div>
         </div>
 
         {/* Local Interests (Chips) */}
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5 text-emerald-400" /> What are you interested in?
+          <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1">
+            <Tag className="w-3.5 h-3.5 text-emerald-400" /> Select Interests
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {INTEREST_OPTIONS.map(interest => {
               const active = selectedInterests.includes(interest);
               return (
@@ -169,7 +167,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
                   type="button"
                   key={interest}
                   onClick={() => toggleInterest(interest)}
-                  className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-all ${
+                  className={`text-xs font-medium px-3 py-2 rounded-xl border transition-all ${
                     active
                       ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
                       : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:border-slate-700'
@@ -183,16 +181,16 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
         </div>
 
         {/* Consent Checkbox */}
-        <div className="flex items-start gap-3 pt-1">
+        <div className="flex items-start gap-2.5 pt-1">
           <input
             type="checkbox"
             id="marketingConsent"
             checked={marketingConsent}
             onChange={e => setMarketingConsent(e.target.checked)}
-            className="mt-1 w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500/30 accent-emerald-500"
+            className="mt-0.5 w-4 h-4 rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500/30 accent-emerald-500 shrink-0"
           />
-          <label htmlFor="marketingConsent" className="text-xs text-slate-400 leading-snug cursor-pointer select-none">
-            I agree to receive local promotions, discounts, and Wi-Fi updates from {venueName}. You can unsubscribe at any time.
+          <label htmlFor="marketingConsent" className="text-xs text-slate-400 leading-tight cursor-pointer select-none">
+            Send me local offers & Wi-Fi updates from {venueName}. Unsubscribe anytime.
           </label>
         </div>
 
@@ -200,7 +198,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-4 py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 disabled:opacity-50"
+          className="w-full mt-3 py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
@@ -215,8 +213,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ venueId, venueName, onSucces
       </form>
 
       <div className="mt-4 text-center">
-        <p className="text-[11px] text-slate-500 flex items-center justify-center gap-1">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Instant Access • 256-bit Secure • No Credit Card Required
+        <p className="text-[10px] text-slate-500 flex items-center justify-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Instant Access • 256-Bit Secure
         </p>
       </div>
 

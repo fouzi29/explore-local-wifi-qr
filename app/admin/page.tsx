@@ -94,7 +94,7 @@ function AdminDashboardContent() {
         </div>
 
         {/* Dashboard Tabs */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-800/80 pb-3">
+        <div className="flex items-center gap-2 border-b border-slate-800/80 pb-3 overflow-x-auto flex-nowrap scrollbar-none">
           
           <button
             onClick={() => setActiveTab('analytics')}

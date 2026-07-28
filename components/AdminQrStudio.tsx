@@ -154,11 +154,11 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
       </div>
 
       {/* Live Tabletop Stand Preview Card */}
-      <div className="flex justify-center my-6">
+      <div className="flex justify-center my-4 overflow-hidden px-2">
         
         <div
           id="printable-stand"
-          className="w-full max-w-md bg-white text-slate-900 rounded-3xl p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[580px] relative overflow-hidden"
+          className="w-full max-w-sm sm:max-w-md bg-white text-slate-900 rounded-3xl p-5 sm:p-8 shadow-2xl border-4 border-slate-100 text-center flex flex-col items-center justify-between min-h-[520px] sm:min-h-[580px] relative overflow-hidden"
         >
           {/* Decorative Top Arch */}
           <div className="w-full bg-slate-950 text-white py-4 px-6 rounded-2xl mb-6 shadow-md">
