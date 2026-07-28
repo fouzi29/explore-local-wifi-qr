@@ -239,7 +239,6 @@ export async function sendCreatorLeadDigestEmail(
             <li><strong>Venue:</strong> ${venue.name} (/v/${venue.slug})</li>
             <li><strong>Guest Name:</strong> ${lead.name}</li>
             <li><strong>Contact:</strong> ${lead.emailOrPhone}</li>
-            <li><strong>Total Platform Leads:</strong> ${totalPlatformLeads}</li>
           </ul>
         </div>
       `
