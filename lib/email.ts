@@ -201,7 +201,6 @@ export async function sendVenueLeadEmail(
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; background-color: #f8fafc; border-radius: 10px; padding: 12px;">
             <tr><td style="padding: 10px; color: #4b5563; font-weight: bold; width: 35%;">Guest Name:</td><td style="padding: 10px; font-weight: bold; color: #0f172a;">${lead.name}</td></tr>
             <tr><td style="padding: 10px; color: #4b5563; font-weight: bold;">Contact Info:</td><td style="padding: 10px; color: #16a34a; font-weight: bold;">${lead.emailOrPhone}</td></tr>
-            <tr><td style="padding: 10px; color: #4b5563; font-weight: bold;">Interests:</td><td style="padding: 10px;">${lead.interests.join(', ') || 'General Wi-Fi'}</td></tr>
             <tr><td style="padding: 10px; color: #4b5563; font-weight: bold;">Device Scanner:</td><td style="padding: 10px;">${lead.deviceType || 'Mobile Web Scanner'}</td></tr>
             <tr><td style="padding: 10px; color: #4b5563; font-weight: bold;">Captured At:</td><td style="padding: 10px; color: #6b7280; font-size: 13px;">${new Date(lead.createdAt).toLocaleString()}</td></tr>
           </table>
