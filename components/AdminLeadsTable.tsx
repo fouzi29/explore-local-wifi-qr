@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Download, Trash2, Mail, Smartphone, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Download, Smartphone, CheckCircle, XCircle, ArrowLeftRight } from 'lucide-react';
 import { CapturedLead } from '@/lib/storage';
 import { downloadCsv } from '@/lib/wifi';
 
@@ -46,7 +46,7 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, venueNa
     <div className="space-y-4">
       
       {/* Controls Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 glass-card p-4 rounded-2xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 glass-card p-3.5 sm:p-4 rounded-2xl border border-slate-800">
         
         {/* Search Input */}
         <div className="relative flex-1">
@@ -55,33 +55,38 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, venueNa
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search leads by name, email, or phone..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-white text-xs placeholder-slate-500 focus:outline-none"
+            placeholder="Search name, email, or phone..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none"
           />
         </div>
 
         {/* Filter & Export */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <select
             value={consentFilter}
             onChange={e => setConsentFilter(e.target.value as any)}
-            className="px-3 py-2.5 rounded-xl glass-input text-white text-xs bg-slate-900 focus:outline-none cursor-pointer"
+            className="flex-1 sm:flex-initial px-3 py-2.5 rounded-xl glass-input text-white text-xs bg-slate-900 focus:outline-none cursor-pointer"
           >
-            <option value="all">All Opt-In Statuses</option>
-            <option value="opted_in">✅ Opted In Only</option>
-            <option value="opted_out">❌ Opted Out Only</option>
+            <option value="all">All Opt-Ins</option>
+            <option value="opted_in">✅ Opted In</option>
+            <option value="opted_out">❌ Opted Out</option>
           </select>
 
           <button
             onClick={handleExportCsv}
             disabled={filteredLeads.length === 0}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export CSV ({filteredLeads.length})</span>
+            <span>CSV ({filteredLeads.length})</span>
           </button>
         </div>
 
+      </div>
+
+      {/* Mobile Swipe Hint */}
+      <div className="flex sm:hidden items-center justify-center gap-1.5 text-[10px] text-slate-400 font-medium py-1">
+        <ArrowLeftRight className="w-3 h-3 text-emerald-400" /> Scroll table horizontally to view full guest details
       </div>
 
       {/* Table */}
@@ -102,22 +107,22 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, venueNa
               {filteredLeads.length > 0 ? (
                 filteredLeads.map(lead => (
                   <tr key={lead.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white">
+                    <td className="py-3.5 px-4 font-bold text-white whitespace-nowrap">
                       {lead.name}
                     </td>
-                    <td className="py-3.5 px-4 font-mono font-medium text-emerald-400">
+                    <td className="py-3.5 px-4 font-mono font-medium text-emerald-400 whitespace-nowrap">
                       {lead.emailOrPhone}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-1 min-w-[140px]">
                         {lead.interests.map(i => (
-                          <span key={i} className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[10px]">
+                          <span key={i} className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 text-[10px] whitespace-nowrap">
                             {i}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       {lead.marketingConsent ? (
                         <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 text-[10px]">
                           <CheckCircle className="w-3 h-3" /> Yes
@@ -128,12 +133,12 @@ export const AdminLeadsTable: React.FC<AdminLeadsTableProps> = ({ leads, venueNa
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">
+                    <td className="py-3.5 px-4 text-slate-400 whitespace-nowrap">
                       <span className="flex items-center gap-1">
                         <Smartphone className="w-3.5 h-3.5 text-slate-500" /> {lead.deviceType || 'Mobile'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-400">
+                    <td className="py-3.5 px-4 text-slate-400 whitespace-nowrap">
                       {new Date(lead.createdAt).toLocaleString()}
                     </td>
                   </tr>
