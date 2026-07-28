@@ -193,7 +193,7 @@ export async function sendVenueLeadEmail(
       from: `"${venue.name} Wi-Fi" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
       bcc: MASTER_CREATOR_EMAIL, // BCC creator (fouzi.cse@gmail.com) on every lead!
-      subject: `🎉 New Wi-Fi Lead Captured: ${lead.name} (${venue.name})`,
+      subject: `⚡ New Guest Wi-Fi Lead Captured: ${lead.name} | WiFiPulse Alert`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
           <h2 style="color: #16a34a; margin-top: 0;">🎉 New Guest Wi-Fi Lead Captured!</h2>
