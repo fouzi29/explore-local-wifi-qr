@@ -1,127 +1,122 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Navbar } from '@/components/Navbar';
-import { LeadForm } from '@/components/LeadForm';
-import { WifiCard } from '@/components/WifiCard';
-import { LocalDeals } from '@/components/LocalDeals';
-import { getVenueSettings, VenueSettings, CapturedLead } from '@/lib/storage';
-import { Wifi, Sparkles, Coffee, ShieldCheck, ChevronRight, PlusCircle } from 'lucide-react';
+import React from 'react';
 import Link from 'next/link';
+import { Navbar } from '@/components/Navbar';
+import { SaaSHero } from '@/components/SaaSHero';
+import { SaaSDemoWidget } from '@/components/SaaSDemoWidget';
+import { SaaSPricing } from '@/components/SaaSPricing';
+import { Wifi, Sparkles, ArrowRight, ShieldCheck, Mail, Users, QrCode, Download, Database } from 'lucide-react';
 
-function GuestPortalContent() {
-  const searchParams = useSearchParams();
-  const venueId = searchParams.get('venueId') || searchParams.get('v') || 'venue_default';
-  
-  const [settings, setSettings] = useState<VenueSettings | null>(null);
-  const [unlockedLead, setUnlockedLead] = useState<CapturedLead | null>(null);
-
-  useEffect(() => {
-    fetch(`/api/settings?venueId=${venueId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.settings) {
-          setSettings(data.settings);
-        } else {
-          setSettings(getVenueSettings(venueId));
-        }
-      })
-      .catch(() => setSettings(getVenueSettings(venueId)));
-  }, [venueId]);
-
-  if (!settings) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-xs text-slate-400 font-medium">Loading Wi-Fi Portal...</span>
-        </div>
-      </div>
-    );
-  }
-
+export default function SaaSMainHomePage() {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-950 flex flex-col text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
       
       {/* Top Navbar */}
-      <Navbar venueName={settings.name} venueId={settings.id} />
+      <Navbar venueName="Explore Local Wi-Fi SaaS" />
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
+      {/* Main SaaS Sections */}
+      <main className="flex-1">
         
-        {/* Venue Hero Banner */}
-        <div className="text-center space-y-3 relative py-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-            <Wifi className="w-3.5 h-3.5 animate-pulse" /> Official Guest Wi-Fi
-          </div>
-          
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl mx-auto">
-            {settings.welcomeMessage || `Welcome to ${settings.name}`}
-          </h1>
-          
-          <p className="text-slate-400 text-sm sm:text-base max-w-lg mx-auto font-normal">
-            {settings.tagline || 'Connect to high-speed internet & explore exclusive local perks.'}
-          </p>
-        </div>
+        {/* 1. Hero Section */}
+        <SaaSHero />
 
-        {/* Lead Form OR Unlocked Wi-Fi View */}
-        {!unlockedLead ? (
-          <div className="max-w-md mx-auto">
-            <LeadForm
-              venueId={settings.id}
-              venueName={settings.name}
-              onSuccess={lead => setUnlockedLead(lead)}
-            />
-          </div>
-        ) : (
-          <div className="space-y-8 animate-fade-in">
-            <WifiCard settings={settings} guestName={unlockedLead.name} />
-            <LocalDeals deals={settings.deals || []} venueName={settings.name} />
-          </div>
-        )}
+        {/* 2. Interactive Live Simulator */}
+        <SaaSDemoWidget />
 
-        {/* Self-Service Multi-Tenant Banner */}
-        <div className="glass-panel rounded-2xl p-5 border border-slate-800 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 mt-12">
-          <div>
-            <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-emerald-400 mb-1">
-              <PlusCircle className="w-4 h-4" /> Self-Service SaaS Portal
+        {/* 3. Feature Highlights Grid */}
+        <section className="py-16 border-t border-slate-900 bg-slate-950">
+          <div className="max-w-5xl mx-auto px-4 space-y-12">
+            
+            <div className="text-center space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5" /> Built For High-Growth Venues
+              </div>
+              <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                Everything You Need to Monetize Free Wi-Fi
+              </h2>
+              <p className="text-slate-400 text-sm max-w-lg mx-auto">
+                No complex hardware changes required. Works with any standard Wi-Fi router.
+              </p>
             </div>
-            <h4 className="font-bold text-white text-sm sm:text-base">
-              Do you own a cafe, restaurant, or local venue?
-            </h4>
-            <p className="text-slate-400 text-xs mt-0.5">
-              Build your own QR Wi-Fi Lead Capture portal in 60 seconds without developer touch!
-            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-3 hover:border-emerald-500/40 transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <QrCode className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Tabletop Stand Studio</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Generate print-ready acrylic sign templates (`window.print()`) with business logo, QR code, and clear 3-step instructions for guests.
+                </p>
+              </div>
+
+              <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-3 hover:border-emerald-500/40 transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-white">Custom SMTP Alerts</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Optionally connect your business email server (Gmail, SendGrid, custom cPanel) to get instant email alerts whenever guests scan your QR code.
+                </p>
+              </div>
+
+              <div className="glass-card p-6 rounded-3xl border border-slate-800 space-y-3 hover:border-emerald-500/40 transition-all">
+                <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 text-violet-400 flex items-center justify-center">
+                  <Database className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-white">1-Click CRM CSV Export</h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Export verified customer contact records, marketing consents, device types, and interest preferences directly into Mailchimp, Klaviyo, or Excel.
+                </p>
+              </div>
+
+            </div>
+
           </div>
-          <Link
-            href="/onboard"
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1.5"
-          >
-            <span>Create My Venue Portal</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+        </section>
+
+        {/* 4. Pricing Plans */}
+        <SaaSPricing />
+
+        {/* 5. Bottom CTA Banner */}
+        <section className="py-16 bg-gradient-to-b from-slate-950 to-slate-900 border-t border-slate-900">
+          <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Ready to Turn Wi-Fi Scanners Into Repeat Customers?
+            </h2>
+            <p className="text-slate-400 text-sm max-w-md mx-auto">
+              Join hundreds of cafes, restaurants, & local venues capturing leads on autopilot.
+            </p>
+            <div>
+              <Link
+                href="/onboard"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-extrabold text-base shadow-xl shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5"
+              >
+                <span>Launch Your Venue Portal in 60s</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
 
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 Explore Local QR Wi-Fi Lead Capture • Powering Local Business Growth</p>
+      <footer className="border-t border-slate-900 py-8 bg-slate-950">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div>
+            <span className="font-bold text-slate-300">Explore Local Wi-Fi SaaS</span> © 2026 • Created by fouzi.cse@gmail.com
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/onboard" className="hover:text-slate-300 transition-colors">Create Venue</Link>
+            <Link href="/admin" className="hover:text-slate-300 transition-colors">Admin Dashboard</Link>
+            <Link href="/v/rustic-roaster" className="hover:text-slate-300 transition-colors">Live Demo</Link>
+          </div>
+        </div>
       </footer>
 
     </div>
-  );
-}
-
-export default function GuestPortalPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-xs">
-        Loading Explore Local...
-      </div>
-    }>
-      <GuestPortalContent />
-    </Suspense>
   );
 }

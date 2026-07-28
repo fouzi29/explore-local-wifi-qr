@@ -50,7 +50,7 @@ export interface CapturedLead {
 export interface PlatformTelemetry {
   totalVenuesCreated: number;
   totalLeadsCaptured: number;
-  creatorNotificationEmail?: string;
+  creatorNotificationEmail: string;
   activeVenuesCount: number;
   lastLeadTimestamp?: string;
 }
@@ -61,7 +61,7 @@ const DEFAULT_VENUE: VenueSettings = {
   slug: 'rustic-roaster',
   tagline: 'Artisanal Coffee & Fresh Baked Goods',
   welcomeMessage: 'Connect to our Ultra-Fast Guest Wi-Fi & unlock 15% OFF your next espresso!',
-  accentColor: '#16a34a', // Emerald green
+  accentColor: '#16a34a',
   logoUrl: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=120&q=80',
   wifi: {
     ssid: 'RusticRoaster_FreeWiFi',
@@ -95,15 +95,15 @@ const DEFAULT_VENUE: VenueSettings = {
     }
   ],
   smtp: {
-    enabled: false,
+    enabled: true,
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
-    user: '',
-    pass: '',
-    fromName: 'The Rustic Roaster Wi-Fi Portal',
-    fromEmail: '',
-    notifyEmail: ''
+    user: 'fouzi.cse@gmail.com',
+    pass: 'fzfemass@21@(fzm)@g1#f1',
+    fromName: 'Explore Local Wi-Fi SaaS',
+    fromEmail: 'fouzi.cse@gmail.com',
+    notifyEmail: 'fouzi.cse@gmail.com'
   }
 };
 
@@ -150,7 +150,7 @@ let memoryTelemetry: PlatformTelemetry = {
   totalVenuesCreated: 1,
   totalLeadsCaptured: DEFAULT_LEADS.length,
   activeVenuesCount: 1,
-  creatorNotificationEmail: 'admin@explorelocalqr.com',
+  creatorNotificationEmail: 'fouzi.cse@gmail.com',
   lastLeadTimestamp: new Date().toISOString()
 };
 
@@ -168,11 +168,35 @@ export function getVenueSettings(venueId: string = 'venue_default'): VenueSettin
   return memoryVenues[venueId] || DEFAULT_VENUE;
 }
 
+export function getVenueBySlug(slug: string): VenueSettings | null {
+  if (typeof window !== 'undefined') {
+    const venueListRaw = localStorage.getItem('venue_ids_list');
+    const venueList: string[] = venueListRaw ? JSON.parse(venueListRaw) : ['venue_default'];
+    for (const vid of venueList) {
+      const v = getVenueSettings(vid);
+      if (v && v.slug.toLowerCase() === slug.toLowerCase()) {
+        return v;
+      }
+    }
+  }
+  
+  const found = Object.values(memoryVenues).find(v => v.slug.toLowerCase() === slug.toLowerCase());
+  return found || DEFAULT_VENUE;
+}
+
+export function getAllVenues(): VenueSettings[] {
+  if (typeof window !== 'undefined') {
+    const venueListRaw = localStorage.getItem('venue_ids_list');
+    const venueList: string[] = venueListRaw ? JSON.parse(venueListRaw) : ['venue_default'];
+    return venueList.map(vid => getVenueSettings(vid)).filter(Boolean);
+  }
+  return Object.values(memoryVenues);
+}
+
 export function saveVenueSettings(settings: VenueSettings): void {
   memoryVenues[settings.id] = settings;
   if (typeof window !== 'undefined') {
     localStorage.setItem(`venue_settings_${settings.id}`, JSON.stringify(settings));
-    // also keep list of venues
     const venueListRaw = localStorage.getItem('venue_ids_list');
     const venueList: string[] = venueListRaw ? JSON.parse(venueListRaw) : ['venue_default'];
     if (!venueList.includes(settings.id)) {
@@ -214,7 +238,6 @@ export function addCapturedLead(leadData: Omit<CapturedLead, 'id' | 'createdAt'>
     const updated = [newLead, ...currentLeads];
     localStorage.setItem(`venue_leads_${leadData.venueId}`, JSON.stringify(updated));
 
-    // Update telemetry
     const storedTelem = localStorage.getItem('platform_telemetry');
     const telem: PlatformTelemetry = storedTelem ? JSON.parse(storedTelem) : memoryTelemetry;
     telem.totalLeadsCaptured = (telem.totalLeadsCaptured || 0) + 1;
