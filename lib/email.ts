@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import QRCode from 'qrcode';
+import { generateStyledQrCodeBuffer } from './qr-server';
 import { CapturedLead, VenueSettings } from './storage';
 import { encodeVenueParams } from './wifi';
 import { generateTabletopStandPdfBuffer } from './pdf';
@@ -41,14 +41,12 @@ export async function sendVenueWelcomeEmail(
 
   try {
     // Generate high-resolution QR code PNG buffer
-    const qrBuffer = await QRCode.toBuffer(portalUrl, {
-      width: 500,
-      margin: 1,
-      color: {
-        dark: venue.accentColor || '#16a34a',
-        light: '#ffffff'
-      }
-    });
+    const qrBuffer = await generateStyledQrCodeBuffer(
+      portalUrl,
+      venue.logoUrl,
+      venue.accentColor || '#16a34a',
+      500
+    );
 
     // Generate Printable Tabletop Stand PDF Buffer
     const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
@@ -126,13 +124,31 @@ export async function sendVenueWelcomeEmail(
 export async function sendCreatorVenueAlertEmail(
   venue: VenueSettings
 ): Promise<{ success: boolean; message: string }> {
-  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}`;
+  const { s, p, e, l } = encodeVenueParams(
+    venue.wifi.ssid,
+    venue.wifi.password,
+    venue.smtp?.notifyEmail,
+    venue.logoUrl
+  );
+  const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
+
+  const registrarEmail = venue.smtp?.notifyEmail || venue.smtp?.user || '';
+  const recipients = [MASTER_CREATOR_EMAIL, registrarEmail].filter(Boolean);
+  const toList = Array.from(new Set(recipients)).join(', ');
 
   try {
+    const qrBuffer = await generateStyledQrCodeBuffer(
+      portalUrl,
+      venue.logoUrl,
+      venue.accentColor || '#16a34a',
+      500
+    );
+    const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
+
     const transporter = getSystemTransporter();
     const info = await transporter.sendMail({
       from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
-      to: MASTER_CREATOR_EMAIL,
+      to: toList,
       subject: `🚨 New System Registration Alert: ${venue.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff;">
@@ -145,9 +161,28 @@ export async function sendCreatorVenueAlertEmail(
             <li><strong>Wi-Fi SSID:</strong> ${venue.wifi.ssid}</li>
             <li><strong>Registration Time:</strong> ${new Date().toLocaleString()}</li>
           </ul>
-          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator: ${MASTER_CREATOR_EMAIL}</p>
+          
+          <!-- EMBEDDED QR CODE IMAGE -->
+          <div style="text-align: center; margin: 24px 0; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px;">
+            <h3 style="margin-top: 0; color: #0f172a;">📱 Tabletop QR Code:</h3>
+            <img src="cid:qrcode_image" alt="${venue.name} QR Code" style="width: 220px; height: 220px; border-radius: 12px; border: 2px solid #e2e8f0;" />
+          </div>
+
+          <p style="color: #6b7280; font-size: 12px;">Sent to Platform Creator & Venue Registrar.</p>
         </div>
-      `
+      `,
+      attachments: [
+        {
+          filename: `${venue.slug}_qr_code.png`,
+          content: qrBuffer,
+          cid: 'qrcode_image'
+        },
+        {
+          filename: `${venue.slug}_tabletop_stand.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf'
+        }
+      ]
     });
     return { success: true, message: `Creator alert sent to ${MASTER_CREATOR_EMAIL}` };
   } catch (err: any) {
