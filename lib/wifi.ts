@@ -5,12 +5,14 @@ export interface WifiConfig {
   hidden?: boolean;
 }
 
+/**
+ * Standard Wi-Fi QR Code string for direct camera scanning
+ */
 export function generateWifiQrString(config: WifiConfig): string {
   const { ssid, password, encryption, hidden = false } = config;
   if (encryption === 'nopass' || !password) {
     return `WIFI:S:${escapeWifiField(ssid)};T:nopass;;`;
   }
-  // iOS & Android camera QR readers require T:WPA or T:WEP or T:nopass
   const encType = (encryption === 'WPA2' || encryption === 'WPA') ? 'WPA' : encryption;
   const hFlag = hidden ? 'H:true;' : '';
   return `WIFI:S:${escapeWifiField(ssid)};T:${encType};P:${escapeWifiField(password)};${hFlag};`;
@@ -18,6 +20,30 @@ export function generateWifiQrString(config: WifiConfig): string {
 
 function escapeWifiField(str: string): string {
   return str.replace(/([\\;:,"])/g, '\\$1');
+}
+
+/**
+ * Base64 helper for encoding SSID and Password in Tabletop QR URLs
+ */
+export function encodeWifiParams(ssid: string, password: string): { s: string; p: string } {
+  try {
+    const s = typeof window !== 'undefined' ? btoa(encodeURIComponent(ssid)) : Buffer.from(ssid).toString('base64');
+    const p = typeof window !== 'undefined' ? btoa(encodeURIComponent(password)) : Buffer.from(password).toString('base64');
+    return { s, p };
+  } catch (e) {
+    return { s: encodeURIComponent(ssid), p: encodeURIComponent(password) };
+  }
+}
+
+export function decodeWifiParams(sParam: string, pParam: string): { ssid: string; password: string } | null {
+  if (!sParam || !pParam) return null;
+  try {
+    const ssid = typeof window !== 'undefined' ? decodeURIComponent(atob(sParam)) : Buffer.from(sParam, 'base64').toString('utf-8');
+    const password = typeof window !== 'undefined' ? decodeURIComponent(atob(pParam)) : Buffer.from(pParam, 'base64').toString('utf-8');
+    return { ssid, password };
+  } catch (e) {
+    return { ssid: decodeURIComponent(sParam), password: decodeURIComponent(pParam) };
+  }
 }
 
 export function downloadCsv(filename: string, rows: Record<string, any>[]) {

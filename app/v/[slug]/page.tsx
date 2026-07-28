@@ -1,17 +1,44 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { LeadForm } from '@/components/LeadForm';
 import { WifiCard } from '@/components/WifiCard';
 import { LocalDeals } from '@/components/LocalDeals';
 import { Footer } from '@/components/Footer';
 import { getVenueBySlug, VenueSettings, CapturedLead } from '@/lib/storage';
+import { decodeWifiParams } from '@/lib/wifi';
 import { Wifi, ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function RestaurantSlugPage({ params }: { params: { slug: string } }) {
-  const slug = params.slug;
+const DEFAULT_VENUE: VenueSettings = {
+  id: 'venue_default',
+  name: 'Explore Local Wi-Fi',
+  slug: 'default',
+  tagline: 'Free Guest Wi-Fi & Local Perks',
+  welcomeMessage: 'Welcome to Free Guest Wi-Fi',
+  accentColor: '#16a34a',
+  wifi: { ssid: 'Guest_WiFi', password: 'FreeWiFi2026', encryption: 'WPA2' },
+  deals: [],
+  smtp: {
+    enabled: false,
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    user: 'fzfemass.1021@gmail.com',
+    pass: '',
+    fromName: '',
+    fromEmail: '',
+    notifyEmail: ''
+  }
+};
+
+function RestaurantPortalContent({ slug }: { slug: string }) {
+  const searchParams = useSearchParams();
+  const sParam = searchParams.get('s');
+  const pParam = searchParams.get('p');
+
   const [settings, setSettings] = useState<VenueSettings | null>(null);
   const [unlockedLead, setUnlockedLead] = useState<CapturedLead | null>(null);
 
@@ -19,14 +46,44 @@ export default function RestaurantSlugPage({ params }: { params: { slug: string 
     fetch(`/api/settings?venueId=${slug}`)
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.settings) {
-          setSettings(data.settings);
-        } else {
-          setSettings(getVenueBySlug(slug));
+        const fetched = (data.success && data.settings) ? data.settings : getVenueBySlug(slug);
+        let venueObj: VenueSettings = fetched || DEFAULT_VENUE;
+        
+        // If s and p encoded parameters exist in the QR code URL, override venue Wi-Fi credentials
+        if (sParam && pParam) {
+          const decoded = decodeWifiParams(sParam, pParam);
+          if (decoded && decoded.ssid && decoded.password) {
+            venueObj = {
+              ...venueObj,
+              wifi: {
+                ...venueObj.wifi,
+                ssid: decoded.ssid,
+                password: decoded.password
+              }
+            };
+          }
         }
+        setSettings(venueObj);
       })
-      .catch(() => setSettings(getVenueBySlug(slug)));
-  }, [slug]);
+      .catch(() => {
+        const fetched = getVenueBySlug(slug);
+        let venueObj: VenueSettings = fetched || DEFAULT_VENUE;
+        if (sParam && pParam) {
+          const decoded = decodeWifiParams(sParam, pParam);
+          if (decoded && decoded.ssid && decoded.password) {
+            venueObj = {
+              ...venueObj,
+              wifi: {
+                ...venueObj.wifi,
+                ssid: decoded.ssid,
+                password: decoded.password
+              }
+            };
+          }
+        }
+        setSettings(venueObj);
+      });
+  }, [slug, sParam, pParam]);
 
   if (!settings) {
     return (
@@ -104,5 +161,20 @@ export default function RestaurantSlugPage({ params }: { params: { slug: string 
       <Footer />
 
     </div>
+  );
+}
+
+export default function RestaurantSlugPage({ params }: { params: { slug: string } }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs text-slate-400 font-medium">Loading Guest Wi-Fi Portal...</span>
+        </div>
+      </div>
+    }>
+      <RestaurantPortalContent slug={params.slug} />
+    </Suspense>
   );
 }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Printer, Download, QrCode, Sparkles, Wifi, ShieldCheck, ExternalLink } from 'lucide-react';
 import { VenueSettings } from '@/lib/storage';
-import { generateWifiQrString } from '@/lib/wifi';
+import { generateWifiQrString, encodeWifiParams } from '@/lib/wifi';
 
 interface AdminQrStudioProps {
   settings: VenueSettings;
@@ -17,12 +17,17 @@ export const AdminQrStudio: React.FC<AdminQrStudioProps> = ({ settings }) => {
   const [standSubtitle, setStandSubtitle] = useState('Scan for Instant Access & Exclusive Local Deals');
 
   // Compute portal target URL
-  const portalUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?venueId=${settings.id}`
-    : `https://explorelocal.vercel.app/?venueId=${settings.id}`;
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'https://explorelocal.vercel.app';
+    
+  const portalUrl = `${baseUrl}/?venueId=${settings.id}`;
 
   const wifiString = generateWifiQrString(settings.wifi);
-  const targetContent = qrType === 'portal' ? portalUrl : wifiString;
+  const { s, p } = encodeWifiParams(settings.wifi.ssid, settings.wifi.password);
+  const targetContent = qrType === 'portal' 
+    ? `${baseUrl}/v/${settings.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}` 
+    : wifiString;
 
   useEffect(() => {
     QRCode.toDataURL(targetContent, {
