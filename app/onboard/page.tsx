@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { Navbar } from '@/components/Navbar';
+import { Footer } from '@/components/Footer';
 import { Wifi, Sparkles, Check, ArrowRight, Mail, Building2, Download, Printer, ExternalLink, CheckCircle2, Palette, Image as ImageIcon } from 'lucide-react';
 import { VenueSettings, saveVenueSettings } from '@/lib/storage';
 
@@ -533,6 +534,8 @@ export default function OnboardPage() {
         )}
 
       </main>
+
+      <Footer />
     </div>
   );
 }

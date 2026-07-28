@@ -6,7 +6,8 @@ import { Navbar } from '@/components/Navbar';
 import { SaaSHero } from '@/components/SaaSHero';
 import { SaaSDemoWidget } from '@/components/SaaSDemoWidget';
 import { SaaSPricing } from '@/components/SaaSPricing';
-import { Wifi, Sparkles, ArrowRight, ShieldCheck, Mail, Users, QrCode, Download, Database } from 'lucide-react';
+import { Footer } from '@/components/Footer';
+import { Sparkles, ArrowRight, Mail, QrCode, Database } from 'lucide-react';
 
 export default function SaaSMainHomePage() {
   return (
@@ -56,9 +57,9 @@ export default function SaaSMainHomePage() {
                 <div className="w-12 h-12 rounded-2xl bg-teal-500/10 border border-teal-500/20 text-teal-400 flex items-center justify-center">
                   <Mail className="w-6 h-6" />
                 </div>
-                <h3 className="text-lg font-bold text-white">Custom SMTP Alerts</h3>
+                <h3 className="text-lg font-bold text-white">Automated Lead Alerts</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Optionally connect your business email server (Gmail, SendGrid, custom cPanel) to get instant email alerts whenever guests scan your QR code.
+                  Automated lead alert emails delivered to your inbox out-of-the-box via built-in system mailer whenever guests connect.
                 </p>
               </div>
 
@@ -103,19 +104,8 @@ export default function SaaSMainHomePage() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-900 py-8 bg-slate-950">
-        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div>
-            <span className="font-bold text-slate-300">WiFiPulse</span> © 2026 • Created by fouzi.cse@gmail.com
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href="/onboard" className="hover:text-slate-300 transition-colors">Create Venue</Link>
-            <Link href="/admin" className="hover:text-slate-300 transition-colors">Admin Dashboard</Link>
-            <Link href="/v/rustic-roaster" className="hover:text-slate-300 transition-colors">Live Demo</Link>
-          </div>
-        </div>
-      </footer>
+      {/* Global Footer */}
+      <Footer />
 
     </div>
   );

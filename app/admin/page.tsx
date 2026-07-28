@@ -8,8 +8,9 @@ import { AdminLeadsTable } from '@/components/AdminLeadsTable';
 import { AdminQrStudio } from '@/components/AdminQrStudio';
 import { AdminSettingsForm } from '@/components/AdminSettingsForm';
 import { MasterAdminTelemetry } from '@/components/MasterAdminTelemetry';
+import { Footer } from '@/components/Footer';
 import { getVenueSettings, getVenueLeads, VenueSettings, CapturedLead } from '@/lib/storage';
-import { LayoutDashboard, Users, QrCode, Settings, ShieldCheck, ExternalLink, Sparkles, Wifi } from 'lucide-react';
+import { LayoutDashboard, Users, QrCode, Settings, ShieldCheck, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 function AdminDashboardContent() {
@@ -83,7 +84,7 @@ function AdminDashboardContent() {
 
           <div className="flex items-center gap-3">
             <Link
-              href={`/?venueId=${settings.id}`}
+              href={`/v/${settings.slug}`}
               target="_blank"
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all"
             >
@@ -137,7 +138,7 @@ function AdminDashboardContent() {
                 : 'bg-slate-900/80 text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <Settings className="w-4 h-4" /> Wi-Fi & SMTP Setup
+            <Settings className="w-4 h-4" /> Wi-Fi & Email Setup
           </button>
 
           <button
@@ -165,6 +166,8 @@ function AdminDashboardContent() {
         </div>
 
       </main>
+
+      <Footer />
 
     </div>
   );

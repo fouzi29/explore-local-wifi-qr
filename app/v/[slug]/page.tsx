@@ -5,8 +5,9 @@ import { Navbar } from '@/components/Navbar';
 import { LeadForm } from '@/components/LeadForm';
 import { WifiCard } from '@/components/WifiCard';
 import { LocalDeals } from '@/components/LocalDeals';
+import { Footer } from '@/components/Footer';
 import { getVenueBySlug, VenueSettings, CapturedLead } from '@/lib/storage';
-import { Wifi, Sparkles, ChevronRight, PlusCircle } from 'lucide-react';
+import { Wifi, ChevronRight, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RestaurantSlugPage({ params }: { params: { slug: string } }) {
@@ -80,7 +81,7 @@ export default function RestaurantSlugPage({ params }: { params: { slug: string 
         <div className="glass-panel rounded-2xl p-5 border border-slate-800 text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-4 mt-12">
           <div>
             <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs font-bold text-emerald-400 mb-1">
-              <PlusCircle className="w-4 h-4" /> Explore Local SaaS Platform
+              <PlusCircle className="w-4 h-4" /> WiFiPulse Platform
             </div>
             <h4 className="font-bold text-white text-sm sm:text-base">
               Do you own a restaurant, café, or venue?
@@ -100,9 +101,7 @@ export default function RestaurantSlugPage({ params }: { params: { slug: string 
 
       </main>
 
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <p>© 2026 Explore Local QR Wi-Fi SaaS • Powering Restaurant & Venue Growth</p>
-      </footer>
+      <Footer />
 
     </div>
   );
