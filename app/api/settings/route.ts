@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getVenueSettings, saveVenueSettings } from '@/lib/storage';
 import { sendVenueWelcomeEmail } from '@/lib/email';
 
+export const maxDuration = 60; // Prevent Vercel function timeout (60 seconds max for Hobby tier)
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const venueId = searchParams.get('venueId') || 'venue_default';

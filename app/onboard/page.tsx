@@ -112,11 +112,17 @@ export default function OnboardPage() {
     };
 
     try {
-      await fetch('/api/settings', {
+      const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newVenueSettings)
       });
+      
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.error || 'Failed to create venue portal.');
+      }
+      
       saveVenueSettings(newVenueSettings);
 
       const { s, p, e, l } = encodeVenueParams(ssid.trim(), password.trim(), notifyEmail.trim(), logoUrl.trim());
@@ -129,7 +135,8 @@ export default function OnboardPage() {
       setCreatedVenue(newVenueSettings);
       setStep(4);
     } catch (err: any) {
-      setError('Failed to create venue portal. Please try again.');
+      console.error('Setup error:', err);
+      setError(err?.message || 'Failed to create venue portal. Please try again.');
     } finally {
       setLoading(false);
     }

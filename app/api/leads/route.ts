@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getVenueLeads, addCapturedLead, getVenueSettings, getVenueBySlug, getPlatformTelemetry } from '@/lib/storage';
 import { sendVenueLeadEmail } from '@/lib/email';
 
+export const maxDuration = 60; // Prevent Vercel function timeout
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const venueId = searchParams.get('venueId') || 'venue_default';
