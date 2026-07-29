@@ -112,10 +112,18 @@ export default function OnboardPage() {
     };
 
     try {
+      const { s, p, e, l } = encodeVenueParams(ssid.trim(), password.trim(), notifyEmail.trim(), logoUrl.trim());
+      const portalUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`
+        : `https://explore-local-wifi-qr.vercel.app/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
+
+      const dataUrl = await generateStyledQrCode(portalUrl, logoUrl.trim() || undefined, safeColor, 400);
+      setQrDataUrl(dataUrl);
+
       const res = await fetch('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newVenueSettings)
+        body: JSON.stringify({ ...newVenueSettings, qrDataUrl: dataUrl })
       });
       
       const data = await res.json().catch(() => ({}));
@@ -124,14 +132,6 @@ export default function OnboardPage() {
       }
       
       saveVenueSettings(newVenueSettings);
-
-      const { s, p, e, l } = encodeVenueParams(ssid.trim(), password.trim(), notifyEmail.trim(), logoUrl.trim());
-      const portalUrl = typeof window !== 'undefined'
-        ? `${window.location.origin}/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`
-        : `https://explore-local-wifi-qr.vercel.app/v/${slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
-
-      const dataUrl = await generateStyledQrCode(portalUrl, logoUrl.trim() || undefined, safeColor, 400);
-      setQrDataUrl(dataUrl);
       setCreatedVenue(newVenueSettings);
       setStep(4);
     } catch (err: any) {

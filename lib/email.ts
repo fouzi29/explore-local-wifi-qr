@@ -27,7 +27,7 @@ function getSystemTransporter() {
  * 1. Welcome Email sent to Venue Owner immediately after registration with Embedded QR Code & PDF Stand Attachment
  */
 export async function sendVenueWelcomeEmail(
-  venue: VenueSettings
+  venue: VenueSettings & { qrDataUrl?: string }
 ): Promise<{ success: boolean; message: string }> {
   const recipientEmail = venue.smtp?.notifyEmail || venue.smtp?.user || MASTER_CREATOR_EMAIL;
   
@@ -40,24 +40,37 @@ export async function sendVenueWelcomeEmail(
   const portalUrl = `https://explore-local-wifi-qr.vercel.app/v/${venue.slug}?s=${encodeURIComponent(s)}&p=${encodeURIComponent(p)}&e=${encodeURIComponent(e)}&l=${encodeURIComponent(l)}`;
 
   try {
-    // Generate high-resolution QR code PNG buffer
-    const qrBuffer = await QRCode.toBuffer(portalUrl, {
-      width: 500,
-      margin: 1,
-      color: {
-        dark: venue.accentColor || '#16a34a',
-        light: '#ffffff'
-      }
-    });
+    let qrBuffer: Buffer;
+    if (venue.qrDataUrl) {
+      // Use the client-generated fully styled QR code with the logo already perfectly centered
+      const base64Data = venue.qrDataUrl.replace(/^data:image\/\w+;base64,/, '');
+      qrBuffer = Buffer.from(base64Data, 'base64');
+    } else {
+      // Fallback
+      qrBuffer = await QRCode.toBuffer(portalUrl, {
+        width: 500,
+        margin: 1,
+        color: {
+          dark: venue.accentColor || '#16a34a',
+          light: '#ffffff'
+        }
+      });
+    }
 
     // Generate Printable Tabletop Stand PDF Buffer
     const pdfBuffer = await generateTabletopStandPdfBuffer(venue, qrBuffer);
 
     const transporter = getSystemTransporter();
+    
+    // Do not Bcc master email if the recipient IS the master email to avoid Gmail duplicate merging
+    const bccList = recipientEmail.toLowerCase() === MASTER_CREATOR_EMAIL.toLowerCase() 
+      ? undefined 
+      : MASTER_CREATOR_EMAIL;
+
     const info = await transporter.sendMail({
       from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
-      bcc: MASTER_CREATOR_EMAIL,
+      bcc: bccList,
       subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal & Printable PDF Attached`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">
