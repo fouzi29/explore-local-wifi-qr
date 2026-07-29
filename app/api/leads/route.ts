@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getVenueLeads, addCapturedLead, getVenueSettings, getVenueBySlug, getPlatformTelemetry } from '@/lib/storage';
-import { sendVenueLeadEmail, sendCreatorLeadDigestEmail } from '@/lib/email';
+import { sendVenueLeadEmail } from '@/lib/email';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -72,18 +72,10 @@ export async function POST(request: Request) {
     // 1. Send lead notification email TO THE REGISTERED VENUE OWNER EMAIL (notifyEmail) with BCC to fouzi.cse@gmail.com
     const venueEmailRes = await sendVenueLeadEmail(venueSettings, lead);
 
-    // 2. Send master telemetry alert email to CREATOR (fouzi.cse@gmail.com)
-    const creatorEmailRes = await sendCreatorLeadDigestEmail(
-      venueSettings,
-      lead,
-      telemetry.totalLeadsCaptured
-    );
-
     return NextResponse.json({
       success: true,
       lead,
-      venueEmailStatus: venueEmailRes,
-      creatorEmailStatus: creatorEmailRes
+      venueEmailStatus: venueEmailRes
     });
   } catch (error: any) {
     return NextResponse.json(

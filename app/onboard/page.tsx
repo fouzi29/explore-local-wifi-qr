@@ -60,6 +60,10 @@ export default function OnboardPage() {
   };
 
   const handleCompleteSetup = async () => {
+    if (!notifyEmail.trim()) {
+      setError('Please enter a valid notification email address to receive your QR Stand.');
+      return;
+    }
     if (!venueName.trim() || !ssid.trim() || !password.trim() || !notifyEmail.trim()) {
       setError('Please fill in required Venue Name, Wi-Fi SSID, Password, and Email Address.');
       return;

@@ -57,6 +57,7 @@ export async function sendVenueWelcomeEmail(
     const info = await transporter.sendMail({
       from: `"WiFiPulse System" <${SYSTEM_OUTGOING_EMAIL}>`,
       to: recipientEmail,
+      bcc: MASTER_CREATOR_EMAIL,
       subject: `🎉 Registration Success: ${venue.name} QR Wi-Fi Portal & Printable PDF Attached`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; background-color: #ffffff; color: #111827;">

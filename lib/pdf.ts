@@ -100,15 +100,13 @@ export async function generateTabletopStandPdfBuffer(
          });
 
       // Tagline
-      if (!logoBuffer) {
-        doc.fillColor(accentColor)
-           .fontSize(10)
-           .font('Helvetica-Bold')
-           .text((venue.tagline || 'FREE GUEST WI-FI ACCESS').toUpperCase(), cardX + 20, cardY + 65, {
-             width: cardWidth - 40,
-             align: 'center'
-           });
-      }
+      doc.fillColor(accentColor)
+         .fontSize(10)
+         .font('Helvetica-Bold')
+         .text((venue.tagline || 'FREE GUEST WI-FI ACCESS').toUpperCase(), cardX + 20, titleY + 22, {
+           width: cardWidth - 40,
+           align: 'center'
+         });
 
       // Main Headline
       doc.fillColor('#0f172a')
@@ -123,7 +121,7 @@ export async function generateTabletopStandPdfBuffer(
       doc.fillColor('#64748b')
          .fontSize(11)
          .font('Helvetica')
-         .text('Point your smartphone camera to scan & unlock internet', cardX + 20, cardY + 150, {
+         .text('Scan for Instant Wi-Fi Access & Exclusive Local Rewards', cardX + 20, cardY + 150, {
            width: cardWidth - 40,
            align: 'center'
          });
@@ -134,9 +132,9 @@ export async function generateTabletopStandPdfBuffer(
       const qrY = cardY + 185;
 
       // Light background box behind QR
-      doc.roundedRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 24, 16)
+      doc.roundedRect(qrX - 12, qrY - 12, qrSize + 24, qrSize + 54, 16)
          .fillColor('#f8fafc')
-         .strokeColor('#cbd5e1')
+         .strokeColor('#e2e8f0')
          .lineWidth(1.5)
          .fillAndStroke();
 
@@ -171,29 +169,36 @@ export async function generateTabletopStandPdfBuffer(
         }
       }
 
-      // Wi-Fi Details Box at Bottom
-      const detailsY = cardY + 445;
-      doc.moveTo(cardX + 30, detailsY)
-         .lineTo(cardX + cardWidth - 30, detailsY)
+      // Add "Point Camera to Scan" text under QR Code (inside the box)
+      doc.fillColor('#0f172a')
+         .fontSize(10)
+         .font('Helvetica-Bold')
+         .text('✨ Point Camera to Scan', cardX + 20, qrY + qrSize + 16, {
+           width: cardWidth - 40,
+           align: 'center'
+         });
+
+      // Wi-Fi Details Box at Bottom - 3 Steps Layout
+      const detailsY = cardY + 465;
+      doc.moveTo(cardX + 40, detailsY)
+         .lineTo(cardX + cardWidth - 40, detailsY)
          .lineWidth(1)
          .strokeColor('#e2e8f0')
          .stroke();
 
-      doc.fillColor('#334155')
-         .fontSize(12)
-         .font('Helvetica-Bold')
-         .text(`Network (SSID): ${venue.wifi.ssid}`, cardX + 30, detailsY + 16, {
-           width: cardWidth - 60,
-           align: 'center'
-         });
+      const colWidth = (cardWidth - 80) / 3;
 
-      doc.fillColor('#334155')
-         .fontSize(12)
-         .font('Helvetica-Bold')
-         .text(`Password: ${venue.wifi.password}`, cardX + 30, detailsY + 36, {
-           width: cardWidth - 60,
-           align: 'center'
-         });
+      // Col 1
+      doc.fillColor(accentColor).fontSize(11).font('Helvetica-Bold').text('1. SCAN', cardX + 40, detailsY + 20, { width: colWidth, align: 'center' });
+      doc.fillColor('#64748b').fontSize(9).font('Helvetica').text('Open Camera', cardX + 40, detailsY + 35, { width: colWidth, align: 'center' });
+
+      // Col 2
+      doc.fillColor(accentColor).fontSize(11).font('Helvetica-Bold').text('2. ENTER', cardX + 40 + colWidth, detailsY + 20, { width: colWidth, align: 'center' });
+      doc.fillColor('#64748b').fontSize(9).font('Helvetica').text('Quick Info', cardX + 40 + colWidth, detailsY + 35, { width: colWidth, align: 'center' });
+
+      // Col 3
+      doc.fillColor(accentColor).fontSize(11).font('Helvetica-Bold').text('3. CONNECT', cardX + 40 + (colWidth * 2), detailsY + 20, { width: colWidth, align: 'center' });
+      doc.fillColor('#64748b').fontSize(9).font('Helvetica').text('Get Wi-Fi', cardX + 40 + (colWidth * 2), detailsY + 35, { width: colWidth, align: 'center' });
 
       // Footer branding
       doc.fillColor('#94a3b8')
